@@ -13,45 +13,70 @@ function Homepage() {
         `http://localhost:8000/api/weather/${cityName}`
       );
       setData(res.data);
+      console.log("Data", res.data);
     } catch (err) {
       console.log("Error", err);
       alert("Error fetching data");
     }
   };
 
-  // Fetch by coordinates
-  const fetchDataByCoords = async (lat, lon) => {
-    try {
-      const res = await axios.get(
-        ` http://localhost:8000/api/weather/${lat},${lon}`
-      );
-      setData(res.data);
-    } catch (err) {
-      console.log("Error", err);
-      alert("Error fetching data");
-    }
-  };
-
-  // On mount → ask for location
   useEffect(() => {
-    if (navigator.geolocation) {
+    const detectLocation = () => {
+      if (!navigator.geolocation) {
+        setError("Geolocation not supported");
+        return;
+      }
+
       navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          fetchDataByCoords(latitude, longitude);
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await axios.get(
+              `http://localhost:8000/api/reverse-geocode?lat=${latitude}&lon=${longitude}`
+            );
+            const data = await res.data;
+            fetchDataByCity(
+              data.address.city || data.address.town || "Detected"
+            );
+          } catch (error) {
+            console.log(error);
+          }
         },
         () => {
-          fetchDataByCity(DEFAULT_CITY); // fallback
+          // fallback manual entry
+          const pin = prompt("Enter your PIN code:");
+          if (pin && pin.length === 6) {
+            setLocation(`PIN: ${pin}`);
+            setError("");
+          } else {
+            setError("Invalid PIN code");
+          }
         }
       );
-    } else {
-      fetchDataByCity(DEFAULT_CITY); // fallback
-    }
+    };
+    detectLocation();
   }, []);
 
   const handleSearch = () => {
     if (city.trim() !== "") {
       fetchDataByCity(city);
+    }
+  };
+
+  const downloadCSV = async () => {
+    try {
+      const res = await axios.get("http://localhost:8000/api/download-csv", {
+        responseType: "blob",
+      });
+      const url = window.URL.createObjectURL(new Blob([res.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "weather_data.csv");
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (err) {
+      console.log("CSV download error", err);
     }
   };
 
@@ -143,8 +168,47 @@ function Homepage() {
               </div>
             </div>
           </div>
+
+          {/* Dynamic: show all remaining keys */}
+          <div className="mt-6">
+            <h3 className="text-lg font-semibold mb-2 text-gray-800">
+              More Details
+            </h3>
+            <div className="grid grid-cols-2 gap-4 text-gray-700 text-sm">
+              {Object.entries(data.weather.main).map(([key, value]) => {
+                if (["temp", "temp_min", "temp_max", "humidity"].includes(key))
+                  return null; // already shown above
+                return (
+                  <div
+                    key={key}
+                    className="p-3 bg-gray-100 rounded-xl text-center">
+                    <p className="capitalize">{key.replace("_", " ")}</p>
+                    <p className="font-semibold">{value}</p>
+                  </div>
+                );
+              })}
+              {Object.entries(data.pollution.list[0].components).map(
+                ([key, value]) => {
+                  if (["co", "no2", "pm2_5", "pm10"].includes(key)) return null;
+                  return (
+                    <div
+                      key={key}
+                      className="p-3 bg-gray-100 rounded-xl text-center">
+                      <p className="uppercase">{key}</p>
+                      <p className="font-semibold">{value}</p>
+                    </div>
+                  );
+                }
+              )}
+            </div>
+          </div>
         </div>
       )}
+      <button
+        onClick={downloadCSV}
+        className="bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-xl shadow-md transition mt-4">
+        Download CSV
+      </button>
     </div>
   );
 }

@@ -9,14 +9,13 @@ const WeatherSchema = new mongoose.Schema(
     weather: [
       {
         id: Number,
-        main: String, // example: "Clouds"
+        main: String,
         description: String,
         icon: String,
       },
     ],
     base: String,
     mainWeather: {
-      // 👈 rename kora holo (eta holo temperature related data)
       temp: Number,
       feels_like: Number,
       temp_min: Number,
@@ -43,13 +42,13 @@ const WeatherSchema = new mongoose.Schema(
       sunset: Number,
     },
     timezone: Number,
-    cityId: Number, // api theke "id"
-    name: String, // city name
+    cityId: Number,
+    name: String,
     cod: Number,
 
     // pollution data
     pollution: {
-      aqi: Number, // 👈 direct aqi rakhlam, extra main object lagbe na
+      aqi: Number,
       components: {
         co: Number,
         no: Number,

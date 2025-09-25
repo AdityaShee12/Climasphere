@@ -4,6 +4,8 @@ import cors from "cors";
 import Weather from "./models/weatherModel.js";
 import cron from "node-cron";
 import connectDB from "./db/index.js";
+import { Parser } from "json2csv";
+
 const app = express();
 app.use(cors());
 
@@ -35,52 +37,6 @@ app.get("/api/weather/:city", async (req, res) => {
       cityId: weatherRes.data.id,
       name: weatherRes.data.name,
       coord: weatherRes.data.coord,
-      weather: weatherRes.data.weather, // array of weather objects
-      mainWeather: weatherRes.data.main, // temp, feels_like, etc
-      base: weatherRes.data.base,
-      visibility: weatherRes.data.visibility,
-      wind: weatherRes.data.wind,
-      clouds: weatherRes.data.clouds,
-      dt: weatherRes.data.dt,
-      sys: weatherRes.data.sys,
-      timezone: weatherRes.data.timezone,
-      cod: weatherRes.data.cod,
-      pollution: {
-        aqi: pollutionRes.data.list[0].main.aqi, // direct extract
-        components: pollutionRes.data.list[0].components,
-        dt: pollutionRes.data.list[0].dt,
-      },
-    });
-
-    res.json(responseData);
-  } catch (error) {
-    console.error("Error fetching city:", error.message);
-    res.status(500).json({ error: "Failed to fetch weather data" });
-  }
-});
-
-// ✅ Get weather by coordinates
-app.get("/api/weather/:lat,:lon", async (req, res) => {
-  try {
-    const { lat, lon } = req.params;
-
-    const weatherRes = await axios.get(
-      ` ${WEATHER_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}&units=metric`
-    );
-
-    const pollutionRes = await axios.get(
-      `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-    );
-
-    const responseData = {
-      weather: weatherRes.data,
-      pollution: pollutionRes.data,
-    };
-
-    await Weather.create({
-      cityId: weatherRes.data.id,
-      name: weatherRes.data.name,
-      coord: weatherRes.data.coord,
       weather: weatherRes.data.weather,
       mainWeather: weatherRes.data.main,
       base: weatherRes.data.base,
@@ -97,11 +53,22 @@ app.get("/api/weather/:lat,:lon", async (req, res) => {
         dt: pollutionRes.data.list[0].dt,
       },
     });
-
     res.json(responseData);
   } catch (error) {
-    console.error("Error fetching coords:", error.message);
+    console.error("Error fetching city:", error.message);
     res.status(500).json({ error: "Failed to fetch weather data" });
+  }
+});
+
+app.get("/api/reverse-geocode", async (req, res) => {
+  const { lat, lon } = req.query;
+  try {
+    const response = await axios.get(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+    );
+    res.json(response.data);
+  } catch (err) {
+    res.status(500).json({ error: "Failed to fetch location" });
   }
 });
 
@@ -126,6 +93,26 @@ const indianStates = [
   "Dehradun",
   "Panaji",
 ];
+
+app.get("/api/download-csv", async (req, res) => {
+  try {
+    const data = await Weather.find().lean();
+
+    if (!data || data.length === 0) {
+      return res.status(404).json({ error: "No data found" });
+    }
+
+    // CSV banate json2csv parser use korbo
+    const parser = new Parser();
+    const csv = parser.parse(data);
+
+    res.header("Content-Type", "text/csv");
+    res.attachment("weather_data.csv");
+    res.send(csv);
+  } catch (err) {
+    res.status(500).json({ error: "Error generating CSV" });
+  }
+});
 
 cron.schedule("0 */6 * * *", async () => {
   console.log("⏱ Running 6-hour cron job for Indian states...");
