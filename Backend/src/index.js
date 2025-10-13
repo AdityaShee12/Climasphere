@@ -16,7 +16,7 @@ const WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "https://api.openweathermap.org/data/2.5/air_pollution";
 const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
 
-// ✅ Get weather by city name
+// Get weather by city name
 app.get("/api/weather/:city", async (req, res) => {
   try {
     const city = req.params.city;
@@ -75,7 +75,7 @@ app.get("/api/reverse-geocode", async (req, res) => {
   }
 });
 
-// ✅ Cron Job: Save India states data every 6 hours
+// Cron Job: Save India states data every 6 hours
 const indianStates = [
   "Delhi",
   "Kolkata",
@@ -105,20 +105,47 @@ app.get("/api/download-csv", async (req, res) => {
       return res.status(404).json({ error: "No data found" });
     }
 
-    // CSV banate json2csv parser use korbo
-    const parser = new Parser();
+    // CSV header fields 
+    const fields = [
+      "_id",
+      "coord",
+      "weather",
+      "base",
+      "main",
+      "visibility",
+      "wind",
+      "clouds",
+      "dt",
+      "sys",
+      "timezone",
+      "id",
+      "name",
+      "cod",
+      "createdAt",
+      "updatedAt",
+      "__v",
+    ];
+
+    const opts = {
+      fields,
+      quote: "",
+      delimiter: ",",
+      header: true,
+    };
+    const parser = new Parser(opts);
     const csv = parser.parse(data);
 
     res.header("Content-Type", "text/csv");
     res.attachment("weather_data.csv");
     res.send(csv);
   } catch (err) {
+    console.error("CSV generation error:", err);
     res.status(500).json({ error: "Error generating CSV" });
   }
 });
 
 cron.schedule("0 */6 * * *", async () => {
-  console.log("⏱ Running 6-hour cron job for Indian states...");
+  console.log("Running 6-hour cron job for Indian states");
 
   for (const city of indianStates) {
     try {
