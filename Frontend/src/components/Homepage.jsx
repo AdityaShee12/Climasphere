@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
+import { API } from "../BackendApi";
 
 function Homepage() {
   const [city, setCity] = useState("");
@@ -9,9 +10,7 @@ function Homepage() {
   // Fetch by city
   const fetchDataByCity = async (cityName) => {
     try {
-      const res = await axios.get(
-        `http://localhost:8000/api/weather/${cityName}`
-      );
+      const res = await axios.get(`${API}/api/weather/${cityName}`);
       setData(res.data);
       console.log("Data", res.data);
     } catch (err) {
@@ -32,7 +31,7 @@ function Homepage() {
           const { latitude, longitude } = pos.coords;
           try {
             const res = await axios.get(
-              `http://localhost:8000/api/reverse-geocode?lat=${latitude}&lon=${longitude}`
+              `${API}/api/reverse-geocode?lat=${latitude}&lon=${longitude}`
             );
             const data = await res.data;
             fetchDataByCity(
@@ -65,7 +64,7 @@ function Homepage() {
 
   const downloadCSV = async () => {
     try {
-      const res = await axios.get("http://localhost:8000/api/download-csv", {
+      const res = await axios.get(`${API}/api/download-csv`, {
         responseType: "blob",
       });
       const url = window.URL.createObjectURL(new Blob([res.data]));

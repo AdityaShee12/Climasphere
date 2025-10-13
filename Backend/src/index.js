@@ -7,8 +7,8 @@ import connectDB from "./db/index.js";
 import { Parser } from "json2csv";
 
 const app = express();
-app.use(cors());
-
+app.use(cors({ origin: API, credentials: true }));
+app.use(express.json());
 const WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "https://api.openweathermap.org/data/2.5/air_pollution";
 const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
