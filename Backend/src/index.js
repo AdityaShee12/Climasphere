@@ -5,6 +5,9 @@ import Weather from "./models/weatherModel.js";
 import cron from "node-cron";
 import connectDB from "./db/index.js";
 import { Parser } from "json2csv";
+import { API } from "../Frontend_API.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 app.use(cors({ origin: API, credentials: true }));
