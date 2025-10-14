@@ -97,71 +97,6 @@ const indianStates = [
   "Panaji",
 ];
 
-// app.get("/api/download-csv", async (req, res) => {
-//   try {
-//     const data = await Weather.find().lean();
-
-//     if (!data || data.length === 0) {
-//       return res.status(404).json({ error: "No data found" });
-//     }
-
-//     // Nested object flatten readable format for CSV
-//     const formattedData = data.map((item) => ({
-//       "City Name": item.name || "",
-//       "Country": item.sys?.country || "",
-//       "Latitude": item.coord?.lat || "",
-//       "Longitude": item.coord?.lon || "",
-//       "Weather Condition": item.weather?.[0]?.main || "",
-//       "Weather Description": item.weather?.[0]?.description || "",
-//       "Temperature (°C)": item.mainWeather?.temp || "",
-//       "Feels Like (°C)": item.mainWeather?.feels_like || "",
-//       "Min Temp (°C)": item.mainWeather?.temp_min || "",
-//       "Max Temp (°C)": item.mainWeather?.temp_max || "",
-//       "Pressure (hPa)": item.mainWeather?.pressure || "",
-//       "Humidity (%)": item.mainWeather?.humidity || "",
-//       "Wind Speed (m/s)": item.wind?.speed || "",
-//       "Wind Direction (°)": item.wind?.deg || "",
-//       "Visibility (m)": item.visibility || "",
-//       "Cloud Coverage (%)": item.clouds?.all || "",
-//       "Air Quality Index (AQI)": item.pollution?.aqi || "",
-//       "CO (µg/m³)": item.pollution?.components?.co || "",
-//       "NO (µg/m³)": item.pollution?.components?.no || "",
-//       "NO₂ (µg/m³)": item.pollution?.components?.no2 || "",
-//       "O₃ (µg/m³)": item.pollution?.components?.o3 || "",
-//       "SO₂ (µg/m³)": item.pollution?.components?.so2 || "",
-//       "PM2.5 (µg/m³)": item.pollution?.components?.pm2_5 || "",
-//       "PM10 (µg/m³)": item.pollution?.components?.pm10 || "",
-//       "NH₃ (µg/m³)": item.pollution?.components?.nh3 || "",
-//       "Sunrise Time": item.sys?.sunrise || "",
-//       "Sunset Time": item.sys?.sunset || "",
-//       "Timezone Offset": item.timezone || "",
-//       "Station Base": item.base || "",
-//       "Weather Code": item.cod || "",
-//       "City ID": item.cityId || "",
-//     }));
-
-//     // CSV fields (header নামগুলো মানুষ বুঝতে পারবে)
-//     const fields = Object.keys(formattedData[0]);
-
-//     const opts = {
-//       fields,
-//       quote: "",
-//       delimiter: ",",
-//       header: true,
-//     };
-
-//     const parser = new Parser(opts);
-//     const csv = parser.parse(formattedData);
-
-//     res.header("Content-Type", "text/csv");
-//     res.attachment("weather_data.csv");
-//     res.send(csv);
-//   } catch (err) {
-//     console.error("CSV generation error:", err);
-//     res.status(500).json({ error: "Error generating CSV" });
-//   }
-// });
-
 app.get("/api/download-csv", async (req, res) => {
   try {
     const data = await Weather.find().lean();
@@ -170,9 +105,40 @@ app.get("/api/download-csv", async (req, res) => {
       return res.status(404).json({ error: "No data found" });
     }
 
-    // প্রতিটি document কে readable time সহ map করা হচ্ছে
-    const formattedData = data.map((item) => {
-      const readableTime = new Date(item.createdAt).toLocaleString("en-IN", {
+    // Nested object flatten readable format for CSV
+    const formattedData = data.map((item) => ({
+      "City Name": item.name || "",
+      Country: item.sys?.country || "",
+      Latitude: item.coord?.lat || "",
+      Longitude: item.coord?.lon || "",
+      "Weather Condition": item.weather?.[0]?.main || "",
+      "Weather Description": item.weather?.[0]?.description || "",
+      "Temperature (°C)": item.mainWeather?.temp || "",
+      "Feels Like (°C)": item.mainWeather?.feels_like || "",
+      "Min Temp (°C)": item.mainWeather?.temp_min || "",
+      "Max Temp (°C)": item.mainWeather?.temp_max || "",
+      "Pressure (hPa)": item.mainWeather?.pressure || "",
+      "Humidity (%)": item.mainWeather?.humidity || "",
+      "Wind Speed (m/s)": item.wind?.speed || "",
+      "Wind Direction (°)": item.wind?.deg || "",
+      "Visibility (m)": item.visibility || "",
+      "Cloud Coverage (%)": item.clouds?.all || "",
+      "Air Quality Index (AQI)": item.pollution?.aqi || "",
+      "CO (µg/m³)": item.pollution?.components?.co || "",
+      "NO (µg/m³)": item.pollution?.components?.no || "",
+      "NO₂ (µg/m³)": item.pollution?.components?.no2 || "",
+      "O₃ (µg/m³)": item.pollution?.components?.o3 || "",
+      "SO₂ (µg/m³)": item.pollution?.components?.so2 || "",
+      "PM2.5 (µg/m³)": item.pollution?.components?.pm2_5 || "",
+      "PM10 (µg/m³)": item.pollution?.components?.pm10 || "",
+      "NH₃ (µg/m³)": item.pollution?.components?.nh3 || "",
+      "Sunrise Time": item.sys?.sunrise || "",
+      "Sunset Time": item.sys?.sunset || "",
+      "Timezone Offset": item.timezone || "",
+      "Station Base": item.base || "",
+      "Weather Code": item.cod || "",
+      "City ID": item.cityId || "",
+      "Record Created At": new Date(item.createdAt).toLocaleString("en-IN", {
         timeZone: "Asia/Kolkata",
         day: "2-digit",
         month: "2-digit",
@@ -181,46 +147,19 @@ app.get("/api/download-csv", async (req, res) => {
         minute: "2-digit",
         second: "2-digit",
         hour12: true,
-      });
+      }),
+    }));
 
-      return {
-        coord: item.coord,
-        weather: item.weather,
-        base: item.base,
-        mainWeather: item.mainWeather,
-        visibility: item.visibility,
-        wind: item.wind,
-        clouds: item.clouds,
-        dt: item.dt,
-        sys: item.sys,
-        timezone: item.timezone,
-        cityId: item.cityId,
-        name: item.name,
-        cod: item.cod,
-        pollution: item.pollution,
-        time: readableTime, // ← এখানে createdAt কে readable time হিসেবে যোগ করা হয়েছে
-      };
-    });
+    // CSV fields
+    const fields = Object.keys(formattedData[0]);
 
-    const fields = [
-      "coord",
-      "weather",
-      "base",
-      "mainWeather",
-      "visibility",
-      "wind",
-      "clouds",
-      "dt",
-      "sys",
-      "timezone",
-      "cityId",
-      "name",
-      "cod",
-      "pollution",
-      "time",
-    ];
+    const opts = {
+      fields,
+      quote: "",
+      delimiter: ",",
+      header: true,
+    };
 
-    const opts = { fields, quote: "", delimiter: ",", header: true };
     const parser = new Parser(opts);
     const csv = parser.parse(formattedData);
 
