@@ -105,26 +105,43 @@ app.get("/api/download-csv", async (req, res) => {
       return res.status(404).json({ error: "No data found" });
     }
 
-    // CSV header fields 
-    const fields = [
-      "_id",
-      "coord",
-      "weather",
-      "base",
-      "main",
-      "visibility",
-      "wind",
-      "clouds",
-      "dt",
-      "sys",
-      "timezone",
-      "id",
-      "name",
-      "cod",
-      "createdAt",
-      "updatedAt",
-      "__v",
-    ];
+    // Nested object flatten readable format for CSV
+    const formattedData = data.map((item) => ({
+      "City Name": item.name || "",
+      "Country": item.sys?.country || "",
+      "Latitude": item.coord?.lat || "",
+      "Longitude": item.coord?.lon || "",
+      "Weather Condition": item.weather?.[0]?.main || "",
+      "Weather Description": item.weather?.[0]?.description || "",
+      "Temperature (°C)": item.mainWeather?.temp || "",
+      "Feels Like (°C)": item.mainWeather?.feels_like || "",
+      "Min Temp (°C)": item.mainWeather?.temp_min || "",
+      "Max Temp (°C)": item.mainWeather?.temp_max || "",
+      "Pressure (hPa)": item.mainWeather?.pressure || "",
+      "Humidity (%)": item.mainWeather?.humidity || "",
+      "Wind Speed (m/s)": item.wind?.speed || "",
+      "Wind Direction (°)": item.wind?.deg || "",
+      "Visibility (m)": item.visibility || "",
+      "Cloud Coverage (%)": item.clouds?.all || "",
+      "Air Quality Index (AQI)": item.pollution?.aqi || "",
+      "CO (µg/m³)": item.pollution?.components?.co || "",
+      "NO (µg/m³)": item.pollution?.components?.no || "",
+      "NO₂ (µg/m³)": item.pollution?.components?.no2 || "",
+      "O₃ (µg/m³)": item.pollution?.components?.o3 || "",
+      "SO₂ (µg/m³)": item.pollution?.components?.so2 || "",
+      "PM2.5 (µg/m³)": item.pollution?.components?.pm2_5 || "",
+      "PM10 (µg/m³)": item.pollution?.components?.pm10 || "",
+      "NH₃ (µg/m³)": item.pollution?.components?.nh3 || "",
+      "Sunrise Time": item.sys?.sunrise || "",
+      "Sunset Time": item.sys?.sunset || "",
+      "Timezone Offset": item.timezone || "",
+      "Station Base": item.base || "",
+      "Weather Code": item.cod || "",
+      "City ID": item.cityId || "",
+    }));
+
+    // CSV fields (header নামগুলো মানুষ বুঝতে পারবে)
+    const fields = Object.keys(formattedData[0]);
 
     const opts = {
       fields,
@@ -132,16 +149,17 @@ app.get("/api/download-csv", async (req, res) => {
       delimiter: ",",
       header: true,
     };
+
     const parser = new Parser(opts);
-    const csv = parser.parse(data);
+    const csv = parser.parse(formattedData);
 
     res.header("Content-Type", "text/csv");
     res.attachment("weather_data.csv");
     res.send(csv);
   } catch (err) {
     console.error("CSV generation error:", err);
-    res.status(500).json({ error: "Error generating CSV" });
-  }
+    res.status(500).json({ error: "Error generating CSV" });
+  }
 });
 
 cron.schedule("0 */6 * * *", async () => {
