@@ -1,11 +1,13 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import { API } from "../BackendApi";
+import { useNavigate } from "react-router-dom";
 
 function Homepage() {
   const [city, setCity] = useState("");
   const [data, setData] = useState(null);
   const DEFAULT_CITY = "Delhi";
+  const navigate = useNavigate();
 
   // Fetch by city
   const fetchDataByCity = async (cityName) => {
@@ -81,6 +83,12 @@ function Homepage() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-400 to-blue-200 p-6">
+      <div onClick={()=>{navigate("/sign_up")}}>
+        Sign Up
+      </div>
+      <div onClick={()=>{navigate("/sign_in")}}>
+        Sign In
+      </div>
       <h1 className="text-3xl font-bold text-white mb-6">
         Weather & Air Pollution Tracker
       </h1>
