@@ -4,12 +4,7 @@ const initialState = {
   userId: "",
   userName: "",
   userAvatar: "",
-  userAbout: "",
-  selectUser: {
-    receiverId: "",
-    receiverName: "",
-    receiverAvatar: "",
-  },
+  userProffesion: "",
 };
 
 const userSlice = createSlice({
@@ -25,22 +20,14 @@ const userSlice = createSlice({
     setUserAvatar: (state, action) => {
       state.userAvatar = action.payload.userAvatar;
     },
-    setUserAbout: (state, action) => {
-      state.userAbout = action.payload.userAbout;
-    },
-    setSelectUser: (state, action) => {
-      state.selectUser.receiverId = action.payload.receiverId;
-      state.selectUser.receiverName = action.payload.receiverName;
-      state.selectUser.receiverAvatar = action.payload.receiverAvatar;
+    setUserProffesion: (state, action) => {
+      state.userAbout = action.payload.userProffesion;
     },
     clearUser: (state) => {
       state.userId = "";
       state.userName = "";
       state.userAvatar = "";
-      state.userAbout = "";
-      state.selectUser.receiverId = "";
-      state.selectUser.receiverName = "";
-      state.selectUser.receiverAvatar = "";
+      state.userProffesion = "";
     },
   },
 });
@@ -49,8 +36,7 @@ export const {
   setUserId,
   setUserName,
   setUserAvatar,
-  setUserAbout,
-  setSelectUser,
+  setUserProffesion,
   clearUser,
 } = userSlice.actions;
 export default userSlice.reducer;

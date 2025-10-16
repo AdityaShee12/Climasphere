@@ -2,11 +2,21 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API } from "../BackendApi";
 import { useNavigate } from "react-router-dom";
+import {
+  setUserId,
+  setUserName,
+  setUserAvatar,
+  setUserProffesion,
+} from "../features/userSlice";
+import { useDispatch, useSelector } from "react-redux";
 
 function Homepage() {
   const [city, setCity] = useState("");
   const [data, setData] = useState(null);
   const DEFAULT_CITY = "Delhi";
+  const { userId, userName, userAvatar, userProffesion } = useSelector(
+    (state) => state.user
+  );
   const navigate = useNavigate();
 
   // Fetch by city
@@ -66,6 +76,11 @@ function Homepage() {
 
   const downloadCSV = async () => {
     try {
+      if (!userId) {
+        navigate("/sign_in");
+        alert("Please sign in to download the CSV.");
+        return;
+      }
       const res = await axios.get(`${API}/api/download-csv`, {
         responseType: "blob",
       });
@@ -81,12 +96,25 @@ function Homepage() {
     }
   };
 
+  const sign_up = () => {
+    navigate("/sign_up");
+  };
+  
+  const sign_in = () => {
+    navigate("/sign_in");
+  };
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-b from-blue-400 to-blue-200 p-6">
-      <div onClick={()=>{navigate("/sign_up")}}>
+      <div
+        onClick={() => {
+          sign_up();
+        }}>
         Sign Up
       </div>
-      <div onClick={()=>{navigate("/sign_in")}}>
+      <div
+        onClick={() => {
+          sign_in();
+        }}>
         Sign In
       </div>
       <h1 className="text-3xl font-bold text-white mb-6">
