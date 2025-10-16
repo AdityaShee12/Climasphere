@@ -2,13 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "axios";
 import { API } from "../BackendApi";
 import { useNavigate } from "react-router-dom";
-import {
-  setUserId,
-  setUserName,
-  setUserAvatar,
-  setUserProffesion,
-} from "../features/userSlice";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
 function Homepage() {
   const [city, setCity] = useState("");
