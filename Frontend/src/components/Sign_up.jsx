@@ -73,7 +73,7 @@ const Sign_up = () => {
   return (
     <div className="flex flex-col items-center">
       <div className="font-mono text-[2.5rem] sm:text-[3rem] lg:text-[3.5rem] xl:text-[3rem] py-12">
-        ChatBook
+        ClimaSphere
       </div>
 
       <div className="w-[85vw] sm:w-[70vw] md:w-[50vw] lg:w-[30rem] xl:w-[30vw] border border-slate-400 rounded-md flex flex-col items-center p-6">

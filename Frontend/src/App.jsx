@@ -6,7 +6,7 @@ import Sign_in from "./components/Sign_in.jsx";
 function App() {
   return (
     <Routes>
-      <Route path="*" element={<Homepage />} />
+      <Route path="/" element={<Homepage />} />
       <Route path="/sign_up" element={<Sign_up />} />
       <Route path="/sign_in" element={<Sign_in />} />
     </Routes>

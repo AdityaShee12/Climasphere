@@ -47,7 +47,7 @@ const Sign_in = () => {
     <div className="min-h-screen p-4 flex flex-col items-center justify-center space-y-4">
       <div className="w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[30rem] xl:w-[28rem] p-8 rounded-xl flex flex-col items-center border border-gray-300 space-y-4">
         <h1 className="text-3xl sm:text-4xl text-center font-bold mb-4 font-mono">
-          Chat_Book
+          ClimaSphere
         </h1>
         <div className="w-full space-y-4">
           <input
