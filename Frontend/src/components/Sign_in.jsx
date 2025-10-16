@@ -5,11 +5,9 @@ import {
   setUserId,
   setUserName,
   setUserAvatar,
-  setUserAbout,
+  setUserProffesion,
 } from "../features/userSlice";
 import { useDispatch } from "react-redux";
-import axios from "axios";
-import { API } from "../BackendApi";
 
 const Sign_in = () => {
   const [signIn, setSignIn] = useState(true);
@@ -38,7 +36,7 @@ const Sign_in = () => {
       dispatch(setUserId({ userId: user.data.loggedInUser._id }));
       dispatch(setUserName({ userName: user.data.loggedInUser.userName }));
       dispatch(setUserAvatar({ userAvatar: user.data.loggedInUser.avatar }));
-      dispatch(setUserAbout({ userAbout: user.data.loggedInUser.proffesion }));
+      dispatch(setUserProffesion({ userAbout: user.data.loggedInUser.proffesion }));
       navigate("/homepage");
     } catch (error) {
       console.error("Login failed:", error);
