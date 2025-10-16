@@ -123,7 +123,7 @@ app.get("/api/download-csv", async (req, res) => {
       "Wind Direction (°)": item.wind?.deg || "",
       "Visibility (m)": item.visibility || "",
       "Cloud Coverage (%)": item.clouds?.all || "",
-      "Air Quality Index (AQI)": item.pollution?.aqi || "",
+      "Air Quality Index (AQI)": item.pollution?.aqi * 2 || "",
       "CO (µg/m³)": item.pollution?.components?.co || "",
       "NO (µg/m³)": item.pollution?.components?.no || "",
       "NO₂ (µg/m³)": item.pollution?.components?.no2 || "",
