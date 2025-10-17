@@ -184,12 +184,12 @@ function Homepage() {
                 Air Quality
               </h3>
               <div className="grid grid-cols-2 gap-4 mb-6">
-                <div className="bg-green-50 p-3 rounded-xl text-center">
+                {/* <div className="bg-green-50 p-3 rounded-xl text-center">
                   <p className="text-sm text-gray-600">AQI</p>
                   <p className="font-semibold">
                     {data.pollution.list[0].main.aqi}
                   </p>
-                </div>
+                </div> */}
                 <div className="bg-green-50 p-3 rounded-xl text-center">
                   <p className="text-sm text-gray-600">CO</p>
                   <p className="font-semibold">
