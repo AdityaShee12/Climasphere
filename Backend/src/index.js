@@ -7,6 +7,7 @@ import connectDB from "./db/index.js";
 import { Parser } from "json2csv";
 import { API } from "../Frontend_API.js";
 import dotenv from "dotenv";
+
 dotenv.config();
 
 const app = express();
@@ -20,9 +21,10 @@ const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
 app.get("/api/weather/:city", async (req, res) => {
   try {
     const city = req.params.city;
+    console.log("City", city);
 
     const weatherRes = await axios.get(
-      ` ${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric `
+      `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
     );
     const { lon, lat } = weatherRes.data.coord;
 
@@ -67,7 +69,7 @@ app.get("/api/reverse-geocode", async (req, res) => {
   const { lat, lon } = req.query;
   try {
     const response = await axios.get(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+      `http://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
     );
     res.json(response.data);
   } catch (err) {
@@ -123,7 +125,7 @@ app.get("/api/download-csv", async (req, res) => {
       "Wind Direction (°)": item.wind?.deg || "",
       "Visibility (m)": item.visibility || "",
       "Cloud Coverage (%)": item.clouds?.all || "",
-      "Air Quality Index (AQI)": item.pollution?.aqi|| "",
+      "Air Quality Index (AQI)": item.pollution?.aqi || "",
       "CO (µg/m³)": item.pollution?.components?.co || "",
       "NO (µg/m³)": item.pollution?.components?.no || "",
       "NO₂ (µg/m³)": item.pollution?.components?.no2 || "",
