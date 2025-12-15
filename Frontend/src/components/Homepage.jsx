@@ -21,6 +21,8 @@ function Homepage() {
   const [weatherConditions, setweatherConditions] = useState("");
   const [AQI, setAQI] = useState(0);
   const [AQIlabel, setAQIlabel] = useState("");
+  const [location, setLocation] = useState("");
+  const [error, setError] = useState("");
   let components = {};
 
   function getWeatherText(main, pm25, visibility) {
