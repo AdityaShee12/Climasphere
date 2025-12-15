@@ -311,7 +311,32 @@ function Homepage() {
           </div>
         </div>
       ) : (
-        <div className="text-center mt-20"></div>
+        <div className="text-center mt-20">
+            <div className="bg-white relative flex items-center mt-[3.9rem] ml-[0.9rem] mr-[0.9rem] rounded-3xl border-2">
+            <button
+              onClick={() => {
+                if (city.trim() !== "") {
+                  fetchDataByCity(city);
+                }
+              }}
+              className="absolute left-[1rem] text-slate-600">
+              <AiOutlineSearch size={21} />
+            </button>
+
+            <input
+              type="text"
+              value={city}
+              placeholder="Give city name"
+              onChange={(e) => setCity(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && city.trim() !== "") {
+                  fetchDataByCity(city);
+                }
+              }}
+              className="placeholder-slate-400 pl-[3rem] text-[1rem] w-full h-[2.3rem] rounded-3xl outline-none"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
