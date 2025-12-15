@@ -17,6 +17,10 @@ const WEATHER_API = "https://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "https://api.openweathermap.org/data/2.5/air_pollution";
 const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
 
+app.get("/", (req, res) => {
+  res.send("API is running successfully");
+});
+
 // Get weather by city name
 app.get("/api/weather/:city", async (req, res) => {
   try {
@@ -174,8 +178,8 @@ app.get("/api/download-csv", async (req, res) => {
   }
 });
 
-cron.schedule("0 */6 * * *", async () => {
-  console.log("Running 6-hour cron job for Indian states");
+cron.schedule("0 */12 * * *", async () => {
+  console.log("Running 12-hour cron job for Indian states");
 
   for (const city of indianStates) {
     try {
