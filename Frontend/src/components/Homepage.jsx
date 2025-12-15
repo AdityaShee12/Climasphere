@@ -212,11 +212,11 @@ function Homepage() {
 
   const downloadCSV = async () => {
     try {
-      if (!userId) {
-        navigate("/sign_in");
-        alert("Please sign in to download the CSV.");
-        return;
-      }
+      // if (!userId) {
+      //   navigate("/sign_in");
+      //   alert("Please sign in to download the CSV.");
+      //   return;
+      // }
       const res = await axios.get(`${API}/api/download-csv`, {
         responseType: "blob",
       });
@@ -230,6 +230,9 @@ function Homepage() {
     } catch (err) {
       console.log("CSV download error", err);
     }
+  };
+  const download = () => {
+    downloadCSV();
   };
 
   const sign_up = () => {
@@ -309,10 +312,13 @@ function Homepage() {
               className="placeholder-slate-400 pl-[3rem] text-[1rem] w-full h-[2.3rem] rounded-3xl outline-none"
             />
           </div>
+          <button className="text-white text-2xl" onClick={() => download()}>
+            Download
+          </button>
         </div>
       ) : (
         <div className="text-center mt-20">
-            <div className="bg-white relative flex items-center mt-[3.9rem] ml-[0.9rem] mr-[0.9rem] rounded-3xl border-2">
+          <div className="bg-white relative flex items-center mt-[3.9rem] ml-[0.9rem] mr-[0.9rem] rounded-3xl border-2">
             <button
               onClick={() => {
                 if (city.trim() !== "") {

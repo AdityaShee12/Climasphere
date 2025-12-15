@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: "http://52.66.188.192:3000", credentials: true }));
+app.use(cors());
 app.use(express.json());
 const WEATHER_API = "http://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "http://api.openweathermap.org/data/2.5/air_pollution";
