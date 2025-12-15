@@ -186,11 +186,6 @@ function Homepage() {
 
   useEffect(() => {
     const detectLocation = () => {
-      if (!navigator.geolocation) {
-        setError("Geolocation not supported");
-        return;
-      }
-
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
