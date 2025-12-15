@@ -11,7 +11,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: API, credentials: true }));
+app.use(cors({ origin: "http://52.66.188.192:3000", credentials: true }));
 app.use(express.json());
 const WEATHER_API = "http://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "http://api.openweathermap.org/data/2.5/air_pollution";
@@ -33,7 +33,7 @@ app.get("/api/weather/:city", async (req, res) => {
     const { lon, lat } = weatherRes.data.coord;
 
     const pollutionRes = await axios.get(
-      ` ${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+      `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
     );
 
     const responseData = {
