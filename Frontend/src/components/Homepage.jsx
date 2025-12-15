@@ -207,16 +207,6 @@ function Homepage() {
             fetchDataByCity(DEFAULT_CITY);
           }
         },
-        () => {
-          // fallback manual entry
-          const pin = prompt("Enter your PIN code:");
-          if (pin && pin.length === 6) {
-            setLocation(`PIN: ${pin}`);
-            setError("");
-          } else {
-            setError("Invalid PIN code");
-          }
-        }
       );
     };
     detectLocation();
