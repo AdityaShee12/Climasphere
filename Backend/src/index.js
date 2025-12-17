@@ -12,7 +12,7 @@ import userRouter from "./routes/user.routes.js";
 dotenv.config();
 
 const app = express();
-app.use(cors({ origin: "http://localhost:5173", credentials: true }));
+app.use(cors({ origin: "http://52.66.188.192:3000", credentials: true }));
 app.use(express.json());
 
 app.use("/api/weather", userRouter);

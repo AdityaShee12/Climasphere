@@ -1,1 +1,1 @@
-export const API = import.meta.env.VITE_BACKEND_URL;
+export const API = "http://52.66.188.192:8000";
