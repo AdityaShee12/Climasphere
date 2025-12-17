@@ -7,12 +7,16 @@ import connectDB from "./db/index.js";
 import { Parser } from "json2csv";
 import { API } from "../Frontend_API.js";
 import dotenv from "dotenv";
+import userRouter from "./routes/user.routes.js";
 
 dotenv.config();
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173", credentials: true }));
 app.use(express.json());
+
+app.use("/api/weather", userRouter);
+
 const WEATHER_API = "http://api.openweathermap.org/data/2.5/weather";
 const POLLUTION_API = "http://api.openweathermap.org/data/2.5/air_pollution";
 const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
@@ -22,50 +26,145 @@ app.get("/", (req, res) => {
 });
 
 // Get weather by city name
+// app.get("/api/weather/:city", async (req, res) => {
+//   try {
+//     const city = req.params.city;
+//     console.log("City", city);
+
+//     const weatherRes = await axios.get(
+//       `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
+//     );
+//     const { lon, lat } = weatherRes.data.coord;
+
+//     const pollutionRes = await axios.get(
+//       `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+//     );
+
+//     const responseData = {
+//       weather: weatherRes.data,
+//       pollution: pollutionRes.data,
+//     };
+
+//     // Save to DB correctly
+//     await Weather.create({
+//       cityId: weatherRes.data.id,
+//       name: weatherRes.data.name,
+//       coord: weatherRes.data.coord,
+//       weather: weatherRes.data.weather,
+//       mainWeather: weatherRes.data.main,
+//       base: weatherRes.data.base,
+//       visibility: weatherRes.data.visibility,
+//       wind: weatherRes.data.wind,
+//       clouds: weatherRes.data.clouds,
+//       dt: weatherRes.data.dt,
+//       sys: weatherRes.data.sys,
+//       timezone: weatherRes.data.timezone,
+//       cod: weatherRes.data.cod,
+//       pollution: {
+//         aqi: pollutionRes.data.list[0].main.aqi,
+//         components: pollutionRes.data.list[0].components,
+//         dt: pollutionRes.data.list[0].dt,
+//       },
+//     });
+//     res.json(responseData);
+//   } catch (error) {
+//     console.error("Error fetching city:", error.message);
+//     res.status(500).json({ error: "Failed to fetch weather data" });
+//   }
+// });
+
+async function reverseGeocode(lat, lon) {
+  const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
+
+  const res = await axios.get(url, {
+    headers: {
+      "User-Agent": "Climasphere/1.0 (contact@climasphere.com)",
+    },
+  });
+
+  const a = res.data.address || {};
+
+  return {
+    country: a.country || "",
+    state: a.state || a.state_district || "",
+    city: a.city || a.town || a.municipality || a.county || "",
+    area: a.suburb || a.neighbourhood || a.village || "",
+  };
+}
+
+function normalizeIndiaLocation(loc) {
+  if (loc.country === "India" && loc.city === loc.state) {
+    return {
+      ...loc,
+      city: loc.state, // Delhi, Chandigarh, etc
+    };
+  }
+  return loc;
+}
+
 app.get("/api/weather/:city", async (req, res) => {
   try {
     const city = req.params.city;
-    console.log("City", city);
 
     const weatherRes = await axios.get(
       `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
     );
+
     const { lon, lat } = weatherRes.data.coord;
 
     const pollutionRes = await axios.get(
       `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
     );
 
-    const responseData = {
-      weather: weatherRes.data,
-      pollution: pollutionRes.data,
-    };
+    // 🔁 Reverse geocode (state detect)
+    const geoRes = await axios.get(
+      `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
+    );
 
-    // Save to DB correctly
-    await Weather.create({
-      cityId: weatherRes.data.id,
-      name: weatherRes.data.name,
+    const geo = geoRes.data[0];
+
+    const data = await Weather.create({
+      location: {
+        country: {
+          code: weatherRes.data.sys.country,
+          name: geo.country || "India",
+        },
+        state: {
+          name: geo.state || "Unknown",
+        },
+        city: {
+          id: weatherRes.data.id,
+          name: weatherRes.data.name,
+        },
+      },
+
       coord: weatherRes.data.coord,
       weather: weatherRes.data.weather,
       mainWeather: weatherRes.data.main,
-      base: weatherRes.data.base,
       visibility: weatherRes.data.visibility,
       wind: weatherRes.data.wind,
       clouds: weatherRes.data.clouds,
+      base: weatherRes.data.base,
       dt: weatherRes.data.dt,
-      sys: weatherRes.data.sys,
       timezone: weatherRes.data.timezone,
+      sys: weatherRes.data.sys,
       cod: weatherRes.data.cod,
+
       pollution: {
         aqi: pollutionRes.data.list[0].main.aqi,
         components: pollutionRes.data.list[0].components,
         dt: pollutionRes.data.list[0].dt,
       },
     });
-    res.json(responseData);
-  } catch (error) {
-    console.error("Error fetching city:", error.message);
-    res.status(500).json({ error: "Failed to fetch weather data" });
+
+    console.log("Data", data);
+
+    res.json({
+      weather: weatherRes.data,
+      pollution: pollutionRes.data,
+    });
+  } catch (err) {
+    res.status(500).json({ error: "Weather fetch failed" });
   }
 });
 

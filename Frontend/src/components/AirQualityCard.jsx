@@ -26,19 +26,17 @@ export default function AirQualityCard({ aqi = 225, label = "Poor" }) {
   const circumference = 2 * Math.PI * radius;
   const progress = Math.min(aqi / 500, 1);
   const offset = circumference * (1 - progress);
+
   return (
-    <div className="w-[19rem] h-[7rem] rounded-2xl bg-[#111827]/80 text-white backdrop-blur-md pl-[0.9rem]  pb-[0.6rem]">
+    <div className="w-[23.5rem] h-[7rem] rounded-2xl bg-[#111827]/80 text-white backdrop-blur-md">
       <div className="flex items-center justify-between">
         {/* LEFT */}
-          <div className="flex flex-col w-[10rem]">
-            <span className={`text-lg font-semibold ${colorMap[label]}`}>
-              {label}
-            </span>{" "}
-            <p className="text-sm text-gray-300">
-              {descriptionMap[label]}
-            </p>
-          </div>
-
+        <div className="flex flex-col w-[10rem] ml-[1.5rem]">
+          <span className={`text-lg font-semibold ${colorMap[label]}`}>
+            {label}
+          </span>{" "}
+          <p className="text-sm text-gray-300">{descriptionMap[label]}</p>
+        </div>
         {/* RIGHT – AQI CIRCLE */}
         <div className="relative h-28 w-28">
           <svg className="h-full w-full rotate-[-90deg]">
@@ -74,7 +72,6 @@ export default function AirQualityCard({ aqi = 225, label = "Poor" }) {
               </linearGradient>
             </defs>
           </svg>
-
           <div className="absolute inset-0 flex left-[1.8rem] top-[2.8rem]">
             <span className="text-[1.5rem] font-semibold">{aqi}</span>
           </div>

@@ -33,11 +33,14 @@ const Sign_in = () => {
     try {
       const user = await loginUser(credentials);
       console.log(user);
-      dispatch(setUserId({ userId: user.data.loggedInUser._id }));
-      dispatch(setUserName({ userName: user.data.loggedInUser.userName }));
-      dispatch(setUserAvatar({ userAvatar: user.data.loggedInUser.avatar }));
-      dispatch(setUserProffesion({ userAbout: user.data.loggedInUser.proffesion }));
-      navigate("/homepage");
+      if (
+        user.data.loggedInUser.email === "kundusandip006@gmail.com" &&
+        user.data.loggedInUser.userName === "kundusandip"
+      ) {
+        navigate("/analyst_dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (error) {
       console.error("Login failed:", error);
     }

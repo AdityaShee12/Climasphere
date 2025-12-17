@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { API } from "../BackendApi";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +6,17 @@ import { useSelector } from "react-redux";
 import { MdSettings, MdAdd } from "react-icons/md";
 import AirQualityCard from "./AirQualityCard.jsx";
 import { AiOutlineSearch } from "react-icons/ai";
+import WeatherChart from "./graph.jsx";
+import {
+  HiOutlineHome,
+  HiHome,
+  HiOutlinePlusCircle,
+  HiPlusCircle,
+  HiOutlineChatBubbleLeft,
+  HiChatBubbleLeft,
+} from "react-icons/hi2";
+import { FaCamera } from "react-icons/fa";
+import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 function Homepage() {
   const [city, setCity] = useState("");
@@ -25,6 +36,16 @@ function Homepage() {
   const [location, setLocation] = useState("");
   const [error, setError] = useState("");
   let components = {};
+  const [active, setActive] = useState("Home");
+  const [contextMenu, setContextMenu] = useState({
+    show: false,
+    x: 0,
+    y: 0,
+  });
+  const [originalY, setOriginalY] = useState(null);
+  const contextRef = useRef(null);
+  const [menuAnimation, setMenuAnimation] = useState(false);
+  const [isZoomed, setIsZoomed] = useState(false);
 
   function getWeatherText(main, pm25, visibility) {
     // API already says Haze
@@ -162,6 +183,7 @@ function Homepage() {
     try {
       setLoading(true);
       const res = await axios.get(`${API}/api/weather/${cityName}`);
+      console.log("Response", res);
       setData(res.data);
       console.log("Data", res.data);
       console.log("Data", res.data.pollution.list[0].components.pm2_5);
@@ -210,31 +232,6 @@ function Homepage() {
     }
   };
 
-  const downloadCSV = async () => {
-    try {
-      // if (!userId) {
-      //   navigate("/sign_in");
-      //   alert("Please sign in to download the CSV.");
-      //   return;
-      // }
-      const res = await axios.get(`${API}/api/download-csv`, {
-        responseType: "blob",
-      });
-      const url = window.URL.createObjectURL(new Blob([res.data]));
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "weather_data.csv");
-      document.body.appendChild(link);
-      link.click();
-      link.remove();
-    } catch (err) {
-      console.log("CSV download error", err);
-    }
-  };
-  const download = () => {
-    downloadCSV();
-  };
-
   const sign_up = () => {
     navigate("/sign_up");
   };
@@ -243,78 +240,209 @@ function Homepage() {
     navigate("/sign_in");
   };
 
+  // useeffect for contextMenu
+  useEffect(() => {
+    console.log("stop");
+
+    const handleClickOutside = (event) => {
+      if (contextRef.current && !contextRef.current.contains(event.target)) {
+        closeContextMenu();
+      }
+    };
+
+    if (contextMenu.show) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [contextMenu.show]);
+
+  const handleMouseMove = (e) => {
+    e.preventDefault();
+    const newWidth = (e.clientX / window.innerWidth) * 100;
+    if (newWidth >= 30 && newWidth <= 95) {
+      setSearchbarWidth(newWidth);
+    }
+  };
+
+  const handleMouseUp = () => {
+    setDragStyle("");
+    setBarStyle("");
+    document.removeEventListener("mousemove", handleMouseMove);
+    document.removeEventListener("mouseup", handleMouseUp);
+  };
+
+  // open context menu
+  const openContextMenu = (event) => {
+    const rect = event.target.getBoundingClientRect();
+    let positionX = rect.left;
+    let positionY = rect.top;
+    const menuHeight = 100; // Approximate height of context menu
+    const menuWidth = 170; // Approximate width of context menu
+    const viewportHeight = window.innerHeight;
+    const viewportWidth = window.innerWidth;
+    // Adjust vertically if overflowing bottom
+    if (rect.top + menuHeight > viewportHeight) {
+      positionY = rect.top - menuHeight;
+    } else {
+      positionY = -80 + rect.top;
+    }
+    // Adjust horizontally if overflowing right
+    if (rect.left + menuWidth > viewportWidth) {
+      positionX = rect.right - menuWidth;
+    }
+    setOriginalY(positionY);
+    setContextMenu({
+      show: true,
+      x: positionX,
+      y: positionY,
+    });
+    setMenuAnimation(false);
+    setTimeout(() => setMenuAnimation(true), 300);
+  };
+
+  // close context menu
+  const closeContextMenu = () => {
+    setContextMenu({
+      show: false,
+      x: 0,
+      y: 0,
+    });
+  };
+
   return (
-    <div className=" w-[100vw] h-[100vh] bg-black">
+    <div className="w-screen min-h-screen overflow-hidden bg-black">
       {data ? (
-        <div>
-          {/* 1st row */}
-          <div className="flex justify-between text-white">
-            {/* Area Name */}
-            <h1 className="text-[1.8rem] font-serif pt-[1rem] pl-[1rem]">
-              {data.weather.name}
-            </h1>
-            {/* Add new tab and Settings */}
-            <div className="flex gap-[1rem] pt-[1rem] pr-[4.2rem]">
-              <button>
-                <MdAdd size={40} />
+        <div className="relative h-full w-full">
+          {/* Search bar */}
+          <div className="fixed top-0 z-50 bg-white h-[2.8rem] flex items-center mt-[0.5rem] ml-[0.9rem] mr-[0.9rem] rounded-3xl border-2">
+            <div className="relative">
+              <button
+                onClick={() => {
+                  if (city.trim() !== "") {
+                    fetchDataByCity(city);
+                  }
+                }}
+                className="absolute left-[0.7rem] text-slate-600">
+                <AiOutlineSearch size={28} />
               </button>
-              <button>
-                <MdSettings size={37} />
-              </button>
+              <input
+                type="text"
+                value={city}
+                placeholder="Give city name"
+                onChange={(e) => setCity(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && city.trim() !== "") {
+                    fetchDataByCity(city);
+                  }
+                }}
+                className="placeholder-slate-400 text-[1.2rem] rounded-3xl pl-[3rem] w-[23rem] outline-none"
+              />
             </div>
           </div>
-          {/* 2nd row */}
-          <div className="flex flex-col">
-            {/* Temperature */}
-            <div className="relative flex justify-center">
-              <h1 className="text-white text-[5rem] mt-[3rem] mr-[3rem]">
-                {Math.round(data.weather.main.temp)}
+          <div className="overflow-y-auto">
+            {" "}
+            {/* Area Name and Settings */}
+            <div className="flex justify-between pt-[5rem] text-white">
+              {/* Area Name */}
+              <h1 className="text-[1.8rem] font-serif pl-[1rem]">
+                {data.weather.name}
               </h1>
-              <h1 className="absolute text-white top-[3.6rem] left-[14.5rem] text-[2rem] font-bold">
-                o
-              </h1>
-            </div>
-            {/* Situation and quality of air*/}
-            <div className="flex flex-col items-center mt-[1rem] mr-[3.5rem] text-[1.3rem] font-medium">
-              <div className="flex gap-[1rem]">
-                <h1 className="text-white">{weatherConditions}</h1>
-                <h1 className="text-white">Air quality : {AQI}</h1>
+              {/* Add new tab and Settings */}
+              <div className="flex gap-[1rem]  pr-[1rem]">
+                <button>
+                  <MdAdd size={40} />
+                </button>
+                <button
+                  onClick={(e) => {
+                    openContextMenu(e);
+                  }}
+                  className="">
+                  <MdSettings size={37} />
+                </button>
               </div>
-              <h1 className="text-white">{AQIlabel}</h1>
             </div>
-            <div className="mt-[5rem] ml-[1.6rem]">
+            {contextMenu.show && (
+              <div
+                ref={contextRef}
+                className={`absolute flex flex-col gap-[0.5rem] rounded-xl w-[10rem] z-50 shadow-2xl border bg-slate-400 translate-x-4 transition-all duration-300 ease-out ${
+                  menuAnimation
+                    ? "opacity-100 translate-y-20"
+                    : "opacity-0 translate-y-0"
+                }`}
+                style={{
+                  top: contextMenu.y,
+                  left: contextMenu.x,
+                }}
+                onClick={(e) => e.stopPropagation()}>
+                <button
+                  onClick={() => {
+                    navigate("/sign_in");
+                  }}>
+                  Sign In/Sign Up
+                </button>
+                <button>Want Data</button>
+                <button>Log out</button>
+              </div>
+            )}
+            {/*Temperature and conditions*/}
+            <div className="flex flex-col items-center mt-[4rem]">
+              <div className="relative flex">
+                <h1 className="text-white text-[5rem]">
+                  {Math.round(data.weather.main.temp)}
+                </h1>
+                <h1 className="absolute text-white text-[2rem] font-bold top-[0.4rem] left-[5.4rem]">
+                  o
+                </h1>
+              </div>
+              <div className="flex text-[1.3rem] mt-[1rem] font-medium">
+                <div className="flex gap-[1rem]">
+                  <h1 className="text-white">{weatherConditions}</h1>
+                  <h1 className="text-white">Air quality : {AQI}</h1>
+                </div>
+              </div>
+              <p className="text-white text-[1.3rem] mt-[0.7rem]">{AQIlabel}</p>
+            </div>
+            {/*Situation and quality of air by AQI meter*/}
+            <div className="flex justify-center mt-[4rem]">
               <AirQualityCard aqi={AQI} label={AQIlabel} />
             </div>
+            <div className="w-full max-w-[70rem] mx-auto px-4 sm:px-6 lg:px-0">
+              <WeatherChart />
+            </div>
           </div>
-          {/* Third row */}
-
-          <div className="bg-white relative flex items-center mt-[3.9rem] ml-[0.9rem] mr-[0.9rem] rounded-3xl border-2">
-            <button
-              onClick={() => {
-                if (city.trim() !== "") {
-                  fetchDataByCity(city);
-                }
-              }}
-              className="absolute left-[1rem] text-slate-600">
-              <AiOutlineSearch size={21} />
+          <nav className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 flex justify-around items-center h-16 z-50">
+            {/* Home */}
+            <button onClick={() => navigate("/")}>
+              {active === "Home" ? (
+                <HiHome className="text-3xl text-white" />
+              ) : (
+                <HiOutlineHome className="text-3xl text-white" />
+              )}
             </button>
 
-            <input
-              type="text"
-              value={city}
-              placeholder="Give city name"
-              onChange={(e) => setCity(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && city.trim() !== "") {
-                  fetchDataByCity(city);
-                }
-              }}
-              className="placeholder-slate-400 pl-[3rem] text-[1rem] w-full h-[2.3rem] rounded-3xl outline-none"
-            />
-          </div>
-          <button className="text-white text-2xl" onClick={() => download()}>
-            Download
-          </button>
+            {/* Upload */}
+            <button onClick={() => navigate("/upload")}>
+              {active === "Upload" ? (
+                <HiPlusCircle className="text-3xl text-white" />
+              ) : (
+                <HiOutlinePlusCircle className="text-3xl text-white" />
+              )}
+            </button>
+
+            {/* Messages */}
+            <button onClick={() => navigate("/messages")}>
+              {active === "Messages" ? (
+                <HiChatBubbleLeft cclassName="text-3xl text-white" />
+              ) : (
+                <HiOutlineChatBubbleLeft className="text-3xl text-white" />
+              )}
+            </button>
+          </nav>
         </div>
       ) : (
         <div className="text-center mt-20">
@@ -347,5 +475,4 @@ function Homepage() {
     </div>
   );
 }
-
 export default Homepage;

@@ -2,10 +2,27 @@ import mongoose from "mongoose";
 
 const WeatherSchema = new mongoose.Schema(
   {
+    // 🌍 Location hierarchy
+    location: {
+      country: {
+        code: String,     // IN, US
+        name: String,     // India
+      },
+      state: {
+        name: String,     // West Bengal, Delhi, Uttar Pradesh
+        code: String,     // WB, DL, UP (optional)
+      },
+      city: {
+        id: Number,       // OpenWeather city id
+        name: String,
+      },
+    },
+
     coord: {
       lon: Number,
       lat: Number,
     },
+
     weather: [
       {
         id: Number,
@@ -14,7 +31,7 @@ const WeatherSchema = new mongoose.Schema(
         icon: String,
       },
     ],
-    base: String,
+
     mainWeather: {
       temp: Number,
       feels_like: Number,
@@ -25,28 +42,30 @@ const WeatherSchema = new mongoose.Schema(
       sea_level: Number,
       grnd_level: Number,
     },
+
     visibility: Number,
+
     wind: {
       speed: Number,
       deg: Number,
     },
+
     clouds: {
       all: Number,
     },
-    dt: Number,
+
     sys: {
-      type: { type: Number },
-      id: Number,
       country: String,
       sunrise: Number,
       sunset: Number,
     },
+
     timezone: Number,
-    cityId: Number,
-    name: String,
+    base: String,
+    dt: Number,
     cod: Number,
 
-    // pollution data
+    // 🌫 Pollution data
     pollution: {
       aqi: Number,
       components: {

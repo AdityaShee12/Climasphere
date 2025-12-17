@@ -3,13 +3,13 @@ import { API } from "../BackendApi.js";
 
 // Register a new user
 export const registerUser = async (formData) => {
-  const response = await axios.post(`${API}/api/v1/users/register`, formData);
+  const response = await axios.post(`${API}/api/weather/register`, formData);
   return response.data;
 };
 
 // Login a user
 export const loginUser = async (credentials) => {
-  const response = await axios.post(`${API}/api/v1/users/login`, credentials, {
+  const response = await axios.post(`${API}/api/weather/login`, credentials, {
     withCredentials: true,
   });
   return response.data;
@@ -18,7 +18,7 @@ export const loginUser = async (credentials) => {
 // Logout the user
 export const logoutUser = async () => {
   const response = await axios.post(
-    `${API}/api/v1/users/logout`,
+    `${API}/api/weather/logout`,
     {},
     {
       withCredentials: true,
@@ -31,7 +31,7 @@ export const logoutUser = async () => {
 // Refresh the access token
 export const refreshAccessToken = async () => {
   const response = await axios.post(
-    `${API}/api/v1/users/refresh-token`,
+    `${API}/api/weather/refresh-token`,
     {},
     {
       withCredentials: true,

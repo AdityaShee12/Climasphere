@@ -1,14 +1,10 @@
+import { transporter } from "../sendOTP.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.models.js";
-import { Message } from "../models/Message.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/ApiError.js";
+import {User} from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
-import { transporter } from "../sendOTP.js";
-import { v4 as uuidv4 } from "uuid";
-import { Status } from "../models/Status.model.js";
-import { GoogleGenerativeAI } from "@google/generative-ai";
 
 const generateAccessAndRefereshTokens = async (userId) => {
   try {
@@ -28,12 +24,46 @@ const generateAccessAndRefereshTokens = async (userId) => {
   }
 };
 
+const sendOtp = asyncHandler(async (req, res) => {
+  const { email } = req.body;
+  console.log("Emails", email);
+
+  if (!email) return res.status(400).json({ message: "Email is required!" });
+  const generateOTP = () =>
+    Math.floor(100000 + Math.random() * 900000).toString();
+  const otp = generateOTP();
+  const mailOptions = {
+    from: `"Chat Book" <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: "Your OTP Code",
+    text: `Your OTP is ${otp}.`,
+  };
+  console.log("Work1");
+  try {
+    transporter.sendMail(mailOptions);
+    console.log("Work2");
+    const responseData = {
+      message: `OTP sent successfully to ${email}`,
+      otp,
+      email,
+    };
+    console.log("✅ Response Data:", responseData); // Debugging
+    return res
+      .status(201)
+      .json(new ApiResponse(200, responseData, "Send otp successfully"));
+  } catch (error) {
+    console.log(error);
+  }
+});
+
 const registerUser = asyncHandler(async (req, res) => {
   const { userName, email, password, proffesion } = req.body;
   console.log("UserName", userName);
 
   if (
-    [userName, email, password, proffesion ].some((field) => field?.trim() === "")
+    [userName, email, password, proffesion].some(
+      (field) => field?.trim() === ""
+    )
   ) {
     throw new ApiError(400, "All fields are required");
   }
@@ -45,16 +75,21 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existedUser) {
     throw new ApiError(409, "User with email or username already exists");
   }
+  const avatarLocalPath = req.files?.avatar[0]?.path;
+  console.log("Avatar", avatarLocalPath);
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  console.log("AvatarURL", avatar);
+
   const user = await User.create({
-    userName,
+    userName: userName.toLowerCase(),
     email,
     proffesion,
     password,
+    profilePic: avatar?.url || "",
   });
 
-  const createdUser = await User.findById(user._id).select(
-    "-password"
-  );
+  const createdUser = await User.findById(user._id).select("-password");
 
   if (!createdUser) {
     throw new ApiError(500, "Something went wrong while registering the user");
@@ -175,9 +210,4 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
   }
 });
 
-export {
-  registerUser,
-  loginUser,
-  logoutUser,
-  refreshAccessToken,
-};
+export { sendOtp, registerUser, loginUser, logoutUser, refreshAccessToken };
