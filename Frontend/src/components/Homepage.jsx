@@ -6,6 +6,7 @@ import { useSelector } from "react-redux";
 import { MdSettings, MdAdd } from "react-icons/md";
 import AirQualityCard from "./AirQualityCard.jsx";
 import { AiOutlineSearch } from "react-icons/ai";
+import { clearUser } from "../features/userSlice.js";
 import WeatherChart from "./graph.jsx";
 import {
   HiOutlineHome,
@@ -15,15 +16,13 @@ import {
   HiOutlineChatBubbleLeft,
   HiChatBubbleLeft,
 } from "react-icons/hi2";
-import { FaCamera } from "react-icons/fa";
-import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
 
 function Homepage() {
   const [city, setCity] = useState("");
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(false);
   const DEFAULT_CITY = "Delhi";
-  const { userId, userName, userAvatar, userProffesion } = useSelector(
+  const { userName, fullName, avatar, userProffesion } = useSelector(
     (state) => state.user
   );
   const navigate = useNavigate();
@@ -47,6 +46,9 @@ function Homepage() {
   const [menuAnimation, setMenuAnimation] = useState(false);
   const [isZoomed, setIsZoomed] = useState(false);
 
+  useEffect(() => {
+    console.log(avatar);
+  }, [avatar]);
   function getWeatherText(main, pm25, visibility) {
     // API already says Haze
     if (main === "Haze") return "Hazy";
@@ -226,20 +228,6 @@ function Homepage() {
     detectLocation();
   }, []);
 
-  const handleSearch = () => {
-    if (city.trim() !== "") {
-      fetchDataByCity(city);
-    }
-  };
-
-  const sign_up = () => {
-    navigate("/sign_up");
-  };
-
-  const sign_in = () => {
-    navigate("/sign_in");
-  };
-
   // useeffect for contextMenu
   useEffect(() => {
     console.log("stop");
@@ -314,8 +302,30 @@ function Homepage() {
     });
   };
 
+  const downloadData = () => {
+    if (userName) {
+      navigate("/download");
+    } else {
+      alert("Please sign in to download data");
+    }
+  };
+
+  const logout = async () => {
+    const response = await axios.post(
+      `${API}/api/weather/logout`,
+      { userName },
+      {
+        withCredentials: true,
+      }
+    );
+    navigate("/sign_in");
+    dispatch(clearUser());
+  };
+
   return (
-    <div className="w-screen min-h-screen overflow-hidden bg-black">
+    <div
+      className="w-screen min-h-screen bg-cover bg-center bg-no-repeat overflow-hidden"
+      style={{ backgroundImage: "url('/bg-screen.png')" }}>
       {data ? (
         <div className="relative h-full w-full">
           {/* Search bar */}
@@ -347,7 +357,7 @@ function Homepage() {
           <div className="overflow-y-auto">
             {" "}
             {/* Area Name and Settings */}
-            <div className="flex justify-between pt-[5rem] text-white">
+            <div className="flex justify-between pt-[5rem]">
               {/* Area Name */}
               <h1 className="text-[1.8rem] font-serif pl-[1rem]">
                 {data.weather.name}
@@ -369,7 +379,7 @@ function Homepage() {
             {contextMenu.show && (
               <div
                 ref={contextRef}
-                className={`absolute flex flex-col gap-[0.5rem] rounded-xl w-[10rem] z-50 shadow-2xl border bg-slate-400 translate-x-4 transition-all duration-300 ease-out ${
+                className={`absolute flex flex-col gap-[0.5rem] rounded-xl w-[13.4rem] h-[15rem] z-50 shadow-2xl border bg-slate-400 -translate-x-6 transition-all duration-300 ease-in-out ${
                   menuAnimation
                     ? "opacity-100 translate-y-20"
                     : "opacity-0 translate-y-0"
@@ -379,41 +389,77 @@ function Homepage() {
                   left: contextMenu.x,
                 }}
                 onClick={(e) => e.stopPropagation()}>
+                <div>
+                  {avatar ? (
+                    <div className="flex items-center">
+                      <img
+                        src={avatar}
+                        alt=""
+                        className="w-[2rem] h-[2rem] rounded-full mt-[0.5rem] ml-[0.9rem]"
+                      />{" "}
+                      <span className=" ml-[0.5rem] text-2xl">{fullName}</span>
+                    </div>
+                  ) : (
+                    <button
+                      onClick={() => {
+                        navigate("/sign_up");
+                      }}
+                      className="pt-[0.5rem] pl-[1rem] text-left text-2xl">
+                      Sign Up
+                    </button>
+                  )}
+                </div>
                 <button
                   onClick={() => {
                     navigate("/sign_in");
-                  }}>
-                  Sign In/Sign Up
+                  }}
+                  className="pt-[0.5rem] pl-[1rem] text-left text-2xl">
+                  Sign In
                 </button>
-                <button>Want Data</button>
-                <button>Log out</button>
+                <button
+                  onClick={() => {
+                    downloadData();
+                  }}
+                  className="pt-[0.5rem] pl-[1rem] text-left text-2xl">
+                  Download Data
+                </button>
+                <button className="pt-[0.5rem] pl-[1rem] text-left text-2xl">
+                  History
+                </button>
+                <button
+                  className="pt-[0.5rem] pl-[1rem] text-left text-2xl text-red-500"
+                  onClick={() => {
+                    logout();
+                  }}>
+                  Log out
+                </button>
               </div>
             )}
             {/*Temperature and conditions*/}
-            <div className="flex flex-col items-center mt-[4rem]">
+            <div className="flex flex-col items-center mt-[4rem] text-black">
               <div className="relative flex">
-                <h1 className="text-white text-[5rem]">
+                <h1 className="text-[5rem]">
                   {Math.round(data.weather.main.temp)}
                 </h1>
-                <h1 className="absolute text-white text-[2rem] font-bold top-[0.4rem] left-[5.4rem]">
+                <h1 className="absolute text-[2rem] font-bold top-[0.4rem] left-[5.4rem]">
                   o
                 </h1>
               </div>
               <div className="flex text-[1.3rem] mt-[1rem] font-medium">
                 <div className="flex gap-[1rem]">
-                  <h1 className="text-white">{weatherConditions}</h1>
-                  <h1 className="text-white">Air quality : {AQI}</h1>
+                  <h1 className="">{weatherConditions}</h1>
+                  <h1 className="">Air quality : {AQI}</h1>
                 </div>
               </div>
-              <p className="text-white text-[1.3rem] mt-[0.7rem]">{AQIlabel}</p>
+              <p className="text-[1.3rem] mt-[0.7rem]">{AQIlabel}</p>
             </div>
             {/*Situation and quality of air by AQI meter*/}
             <div className="flex justify-center mt-[4rem]">
               <AirQualityCard aqi={AQI} label={AQIlabel} />
             </div>
-            <div className="w-full max-w-[70rem] mx-auto px-4 sm:px-6 lg:px-0">
+            {/* <div className="w-full max-w-[70rem] mx-auto px-4 sm:px-6 lg:px-0">
               <WeatherChart />
-            </div>
+            </div> */}
           </div>
           <nav className="fixed bottom-0 left-0 w-full bg-black border-t border-gray-700 flex justify-around items-center h-16 z-50">
             {/* Home */}
@@ -421,7 +467,12 @@ function Homepage() {
               {active === "Home" ? (
                 <HiHome className="text-3xl text-white" />
               ) : (
-                <HiOutlineHome className="text-3xl text-white" />
+                <HiOutlineHome
+                  className="text-3xl text-white"
+                  onClick={() => {
+                    navigate("/");
+                  }}
+                />
               )}
             </button>
 
@@ -430,7 +481,12 @@ function Homepage() {
               {active === "Upload" ? (
                 <HiPlusCircle className="text-3xl text-white" />
               ) : (
-                <HiOutlinePlusCircle className="text-3xl text-white" />
+                <HiOutlinePlusCircle
+                  className="text-3xl text-white"
+                  onClick={() => {
+                    navigate("");
+                  }}
+                />
               )}
             </button>
 

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { loginUser } from "../services/userService";
 import { useNavigate } from "react-router-dom";
 import {
-  setUserId,
+  setUserFullName,
   setUserName,
   setUserAvatar,
   setUserProffesion,
@@ -31,15 +31,28 @@ const Sign_in = () => {
       password,
     };
     try {
-      const user = await loginUser(credentials);
-      console.log(user);
+      const res = await loginUser(credentials);
+      const response = res.data.loggedInUser;
+      console.log("RES", response);
+
       if (
-        user.data.loggedInUser.email === "kundusandip006@gmail.com" &&
-        user.data.loggedInUser.userName === "kundusandip"
+        response.email === "kundusandip006@gmail.com" &&
+        response.userName === "kundusandip"
       ) {
+        dispatch(setUserName({ userName: response.userName }));
+        dispatch(setUserFullName({ fullName: response.fullName }));
+        dispatch(setUserAvatar({ avatar: response.avatar }));
+        dispatch(setUserProffesion({ userProffesion: response.proffesion }));
         navigate("/analyst_dashboard");
       } else {
-        navigate("/");
+        if (response) {
+          console.log("Response", response.userName);
+          dispatch(setUserName({ userName: response.userName }));
+          dispatch(setUserFullName({ fullName: response.fullName }));
+          dispatch(setUserAvatar({ avatar: response.avatar }));
+          dispatch(setUserProffesion({ userProffesion: response.proffesion }));
+          navigate("/");
+        }
       }
     } catch (error) {
       console.error("Login failed:", error);

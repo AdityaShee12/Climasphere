@@ -3,7 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { registerUser } from "../services/userService";
 import {
-  setUserId,
+  setUserFullName,
   setUserName,
   setUserAvatar,
   setUserProffesion,
@@ -84,8 +84,9 @@ const Sign_up = () => {
     e.preventDefault();
 
     const formData = new FormData();
-    console.log(userName,email,password,proffesion);
+    console.log(userName, email, password, proffesion, fullName);
 
+    formData.append("fullName", fullName);
     formData.append("userName", userName);
     formData.append("email", email);
     formData.append("password", password);
@@ -94,7 +95,16 @@ const Sign_up = () => {
     if (avatar) formData.append("avatar", avatar);
     try {
       const response = await registerUser(formData);
-      if (response) navigate("/");
+      if (response) {
+        console.log("Response", response);
+        dispatch(setUserName({ userName: response.data.userName }));
+        dispatch(setUserFullName({ fullName: response.data.fullName }));
+        dispatch(setUserAvatar({ avatar: response.data.avatar }));
+        dispatch(
+          setUserProffesion({ userProffesion: response.data.proffesion })
+        );
+        navigate("/");
+      }
     } catch (error) {
       console.log(error);
     }

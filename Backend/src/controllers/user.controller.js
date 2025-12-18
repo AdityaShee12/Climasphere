@@ -2,7 +2,7 @@ import { transporter } from "../sendOTP.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import {User} from "../models/user.models.js";
+import { User } from "../models/user.models.js";
 import { uploadOnCloudinary } from "../utils/cloudinary.js";
 import jwt from "jsonwebtoken";
 
@@ -57,15 +57,18 @@ const sendOtp = asyncHandler(async (req, res) => {
 });
 
 const registerUser = asyncHandler(async (req, res) => {
-  const { userName, email, password, proffesion } = req.body;
-  console.log("UserName", userName);
+  const { userName, email, password, proffesion, fullName } = req.body;
+  console.log("UserName", userName, email, proffesion, password);
 
   if (
-    [userName, email, password, proffesion].some(
+    [fullName, userName, email, password, proffesion].some(
       (field) => field?.trim() === ""
     )
   ) {
     throw new ApiError(400, "All fields are required");
+  }
+  if (typeof fullName !== "string") {
+    throw new ApiError(400, "fullName must be a string");
   }
 
   const existedUser = await User.findOne({
@@ -83,10 +86,11 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const user = await User.create({
     userName: userName.toLowerCase(),
+    fullName,
     email,
     proffesion,
     password,
-    profilePic: avatar?.url || "",
+    avatar: avatar?.url || "",
   });
 
   const createdUser = await User.findById(user._id).select("-password");
@@ -159,29 +163,34 @@ const loginUser = asyncHandler(async (req, res) => {
 });
 
 const logoutUser = asyncHandler(async (req, res) => {
-  const { userId } = req.body;
-  await User.findByIdAndUpdate(
-    userId,
-    {
-      $unset: {
-        refreshToken: 1, // this removes the field from document
-      },
-    },
-    {
-      new: true,
-    }
+  const { userName } = req.body;
+
+  if (!userName) {
+    return res.status(400).json({ message: "userName is required" });
+  }
+
+  // Refresh token field remove
+  const updatedUser = await User.findOneAndUpdate(
+    { userName: userName.toLowerCase() },
+    { $unset: { refreshToken: 1 } },
+    { new: true }
   );
 
+  if (!updatedUser) {
+    return res.status(404).json({ message: "User not found" });
+  }
+
+  // Clear cookies
   const options = {
     httpOnly: true,
     secure: true,
+    sameSite: "None",
   };
-
   return res
     .status(200)
     .clearCookie("accessToken", options)
     .clearCookie("refreshToken", options)
-    .json(new ApiResponse(200, {}, "User logged Out"));
+    .json(new ApiResponse(200, {}, "User logged out successfully"));
 });
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
