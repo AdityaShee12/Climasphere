@@ -25,54 +25,6 @@ app.get("/", (req, res) => {
   res.send("API is running successfully");
 });
 
-// Get weather by city name
-// app.get("/api/weather/:city", async (req, res) => {
-//   try {
-//     const city = req.params.city;
-//     console.log("City", city);
-
-//     const weatherRes = await axios.get(
-//       `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
-//     );
-//     const { lon, lat } = weatherRes.data.coord;
-
-//     const pollutionRes = await axios.get(
-//       `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-//     );
-
-//     const responseData = {
-//       weather: weatherRes.data,
-//       pollution: pollutionRes.data,
-//     };
-
-//     // Save to DB correctly
-//     await Weather.create({
-//       cityId: weatherRes.data.id,
-//       name: weatherRes.data.name,
-//       coord: weatherRes.data.coord,
-//       weather: weatherRes.data.weather,
-//       mainWeather: weatherRes.data.main,
-//       base: weatherRes.data.base,
-//       visibility: weatherRes.data.visibility,
-//       wind: weatherRes.data.wind,
-//       clouds: weatherRes.data.clouds,
-//       dt: weatherRes.data.dt,
-//       sys: weatherRes.data.sys,
-//       timezone: weatherRes.data.timezone,
-//       cod: weatherRes.data.cod,
-//       pollution: {
-//         aqi: pollutionRes.data.list[0].main.aqi,
-//         components: pollutionRes.data.list[0].components,
-//         dt: pollutionRes.data.list[0].dt,
-//       },
-//     });
-//     res.json(responseData);
-//   } catch (error) {
-//     console.error("Error fetching city:", error.message);
-//     res.status(500).json({ error: "Failed to fetch weather data" });
-//   }
-// });
-
 async function reverseGeocode(lat, lon) {
   const url = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`;
 

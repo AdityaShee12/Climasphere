@@ -62,9 +62,7 @@ const Sign_in = () => {
   return (
     <div className="min-h-screen p-4 flex flex-col items-center justify-center space-y-4">
       <div className="w-[90vw] sm:w-[80vw] md:w-[60vw] lg:w-[30rem] xl:w-[28rem] p-8 rounded-xl flex flex-col items-center border border-gray-300 space-y-4">
-        <h1 className="text-3xl sm:text-4xl text-center font-bold mb-4 font-mono">
-          ClimaSphere
-        </h1>
+        <img src="/Title1.png" alt="" className="w-[18rem]" />{" "}
         <div className="w-full space-y-4">
           <input
             id="email"
@@ -98,7 +96,7 @@ const Sign_in = () => {
 
           <button
             onClick={handleLogin}
-            className="mt-4 w-full text-black font-bold py-2 px-4 rounded transition duration-300 font-mono hover:shadow-lg hover:shadow-sky-400 border border-gray-300 text-center text-base sm:text-lg">
+            className="bg-[#4337e6] text-white text-lg w-[23rem] h-[2.8rem] rounded-xl my-6 flex items-center justify-center gap-3">
             Sign in
           </button>
         </div>

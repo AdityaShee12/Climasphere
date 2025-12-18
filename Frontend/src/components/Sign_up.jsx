@@ -113,8 +113,8 @@ const Sign_up = () => {
   return (
     <div className="flex flex-col items-center">
       <div className="border border-slate-400 rounded-md h-[35rem] w-[26rem] flex flex-col items-center bg-white mt-[3rem] p-[2rem]">
-        <img src="" alt="" className="w-[18rem]" />{" "}
-        <div className="text-lg text-center font-serif text-slate-500 mb-[1rem]">
+        <img src="/Title1.png" alt="" className="w-[18rem]" />{" "}
+        <div className="text-lg text-center font-serif text-slate-500 mt-[3rem] mb-[1rem]">
           Sign up to download weather and pollution data and see enviromental
           vlogs
         </div>
