@@ -29,6 +29,8 @@ function Homepage() {
   let pm_25;
   let visibility;
   let main;
+  let windSpeed;
+  let clouds;
   const [weatherConditions, setweatherConditions] = useState("");
   const [AQI, setAQI] = useState(0);
   const [AQIlabel, setAQIlabel] = useState("");
@@ -322,6 +324,9 @@ function Homepage() {
       components = res.data.pollution.list[0].components;
       const airQuality = calculateAQIFromAllPollutants(components);
       visibility = res.data.weather.visibility;
+      windSpeed = res.data.weather.wind.speed;
+      clouds = res.data.weather.clouds;
+
       main = res.data.weather.weather[0].main;
       const weatherText = getWeatherText(main, pm_25, visibility);
 
@@ -341,19 +346,26 @@ function Homepage() {
 
   useEffect(() => {
     const detectLocation = () => {
-      navigator.geolocation.getCurrentPosition(async (pos) => {
-        const { latitude, longitude } = pos.coords;
-        try {
-          const res = await axios.get(
-            `${API}/api/reverse-geocode?lat=${latitude}&lon=${longitude}`
-          );
-          const data = await res.data;
-          fetchDataByCity(data.address.city || data.address.town || "Detected");
-        } catch (error) {
-          console.log(error);
+      navigator.geolocation.getCurrentPosition(
+        async (pos) => {
+          const { latitude, longitude } = pos.coords;
+          try {
+            const res = await axios.get(
+              `${API}/api/reverse-geocode?lat=${latitude}&lon=${longitude}`
+            );
+            const data = res.data;
+            fetchDataByCity(
+              data.address.city || data.address.town || DEFAULT_CITY
+            );
+          } catch (err) {
+            fetchDataByCity(DEFAULT_CITY);
+          }
+        },
+        (error) => {
+          console.log("Geolocation error:", error);
           fetchDataByCity(DEFAULT_CITY);
         }
-      });
+      );
     };
     detectLocation();
   }, []);
@@ -486,7 +498,7 @@ function Homepage() {
           </div>
 
           {/* Content */}
-          <div className="pt-20 pb-24">
+          <div className="pt-12 pb-24">
             {/* Header */}
             <div className="flex justify-between items-center">
               <h1 className="text-3xl font-serif">{data.weather.name}</h1>
@@ -545,7 +557,7 @@ function Homepage() {
             )}
 
             {/* Temperature Section */}
-            <div className="flex flex-col items-center mt-16">
+            <div className="flex flex-col items-center mt-9">
               <div className="relative">
                 <h1 className="text-[5rem] sm:text-[6rem] font-bold">
                   {Math.round(data.weather.main.temp)}
@@ -570,13 +582,11 @@ function Homepage() {
               </div>
             </div>
           </div>
-
           {/* Bottom Navigation */}
           <nav className="fixed bottom-0 left-0 w-full bg-black flex justify-around items-center h-16 z-50">
             <button onClick={() => navigate("/")}>
               <HiHome className="text-3xl" />
             </button>
-
             <button
               onClick={() =>
                 alert(
