@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API } from "../BackendApi.js";
+import { BACKEND_API } from "../Backend_API.js";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
 
@@ -10,7 +10,7 @@ export default function AnalystPortal() {
 
   /* ---------------- CSV DOWNLOAD ---------------- */
   const downloadCSV = async () => {
-    const res = await axios.get(`${API}/api/download-csv`, {
+    const res = await axios.get(`${BACKEND_API}/api/download-csv`, {
       responseType: "blob",
       withCredentials: true,
     });
@@ -40,7 +40,7 @@ export default function AnalystPortal() {
   /* ---------------- FETCH SAVED INSIGHTS ---------------- */
   const fetchInsights = async () => {
     try {
-      const res = await axios.get(`${API}/api/weather/insights`, {
+      const res = await axios.get(`${BACKEND_API}/api/weather/insights`, {
         withCredentials: true,
       });
       setSavedInsights(res.data.data || []);
@@ -83,7 +83,7 @@ export default function AnalystPortal() {
         }
       });
 
-      await axios.post(`${API}/api/weather/insights/upload`, formData, {
+      await axios.post(`${BACKEND_API}/api/weather/insights/upload`, formData, {
         withCredentials: true,
         headers: { "Content-Type": "multipart/form-data" },
       });

@@ -39,6 +39,28 @@ const userSchema = new Schema(
     refreshToken: {
       type: String,
     },
+    about: {
+      type: String,
+    },
+    role: {
+      type: String,
+      enum: ["user", "admin", "analyst"],
+      default: "user",
+    },
+    otherUsers: [
+      {
+        id: {
+          type: Schema.Types.ObjectId,
+          ref: "User",
+          required: true,
+        },
+        fullName: { type: String, required: true },
+        avatar: { type: String },
+        relation: { type: String },
+        about: { typee: String },
+        participantType: { type: String },
+      },
+    ],
     proffesion: {
       type: String,
     },

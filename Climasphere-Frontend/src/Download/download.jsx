@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API } from "../BackendApi.js";
+import { BACKEND_API } from "../Backend_API.js";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
 
@@ -11,7 +11,7 @@ export default function Download() {
   /* ---------------- CSV DOWNLOAD (UNCHANGED) ---------------- */
   const downloadCSV = async () => {
     try {
-      const res = await axios.get(`${API}/api/download-csv`, {
+      const res = await axios.get(`${BACKEND_API}/api/download-csv`, {
         responseType: "blob",
       });
 
@@ -39,7 +39,7 @@ export default function Download() {
   /* ---------------- FETCH INSIGHTS ---------------- */
   const fetchInsights = async () => {
     try {
-      const res = await axios.get(`${API}/api/weather/insights`, {
+      const res = await axios.get(`${BACKEND_API}/api/weather/insights`, {
         withCredentials: true,
       });
       setInsights(res.data.data || []);
