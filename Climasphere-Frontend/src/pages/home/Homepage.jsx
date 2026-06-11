@@ -328,10 +328,9 @@ const Homepage = () => {
       navigator.geolocation.getCurrentPosition(
         async (pos) => {
           const { latitude, longitude } = pos.coords;
+          console.log("LALO", latitude, longitude);
           try {
-            const res = await axios.get(
-              `${BACKEND_API}/api/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
-            );
+            const res = await weatherAPI.detectLocation(latitude, longitude);
             const data = res.data;
             fetchDataByCity(
               data.address.city || data.address.town || DEFAULT_CITY

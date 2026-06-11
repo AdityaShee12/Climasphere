@@ -167,9 +167,9 @@ const apiRequest = async (
 
 // WEATHER API
 export const weatherAPI = {
-    detectLocation: async () => {
+    detectLocation: async (latitude, longitude) => {
         return apiRequest(() =>
-            api.get(`/reverse-geocode?lat=${latitude}&lon=${longitude}`)
+            api.get(`weather/reverse-geocode?lat=${latitude}&lon=${longitude}`)
         );
     },
     weatherData: async (cityName) => {
