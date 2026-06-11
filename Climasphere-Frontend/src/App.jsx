@@ -14,7 +14,7 @@ function App() {
   return (
     <Routes>
       <Route path="/" element={<HomeLayout />}>
-        <Route index element={<Homepage />} />  {/* ← এটাই "/" এ render হবে */}
+        <Route index element={<Homepage />} />
         <Route path="post" element={<Post />} />
         {/* <Route path="chat" element={<ChatLayout />}>
           <Route path=":userName" element={<ChatPage />} />

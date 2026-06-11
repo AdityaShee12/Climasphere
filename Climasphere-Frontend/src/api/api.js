@@ -108,50 +108,6 @@ api.interceptors.response.use(
             }
             originalRequest._retry = true;
             isRefreshing = true;
-            // try {
-            //     const response =
-            //         await axios.post(
-            //             `${API_URL}/auth/refreshAccessToken`,
-            //             {},
-            //             {
-            //                 withCredentials: true,
-            //             }
-            //         );
-            //     const newAccessToken =
-            //         response.data?.data?.accessToken;
-            //     store.dispatch(
-            //         setAccessToken(
-            //             newAccessToken
-            //         )
-            //     );
-            //     processQueue(
-            //         null,
-            //         newAccessToken
-            //     );
-            //     originalRequest.headers.Authorization =
-            //         `Bearer ${newAccessToken}`;
-            //     return api(originalRequest);
-            // } catch (refreshError) {
-            //     console.error(
-            //         "❌ Refresh Token Failed:",
-            //         refreshError
-            //     );
-            //     processQueue(
-            //         refreshError,
-            //         null
-            //     );
-            //     store.dispatch(logout());
-            //     toast.error(
-            //         "Session expired. Please login again."
-            //     );
-            //     window.location.href =
-            //         "/login";
-            //     return Promise.reject(
-            //         refreshError
-            //     );
-            // } finally {
-            //     isRefreshing = false;
-            // }
         }
         if (!error.response) {
             toast.error(
@@ -206,6 +162,20 @@ const apiRequest = async (
             data:
                 error.data || null,
         };
+    }
+};
+
+// WEATHER API
+export const weatherAPI = {
+    detectLocation: async () => {
+        return apiRequest(() =>
+            api.get(`/reverse-geocode?lat=${latitude}&lon=${longitude}`)
+        );
+    },
+    weatherData: async (cityName) => {
+        return apiRequest(() =>
+            api.get(`weather/weatherData/${cityName}`)
+        );
     }
 };
 
@@ -296,7 +266,9 @@ export const authAPI = {
         ),
 };
 
+// CHAT API
 export const chatAPI = {
+
     previousChat: async (data) =>
         apiRequest(() =>
             api.get(
@@ -306,7 +278,9 @@ export const chatAPI = {
         ),
 }
 
+// USER API
 export const userAPI = {
+
     searchUser: async ({ searchText, userId }) =>
         apiRequest(() =>
             api.get(`/users/searchUser?query=${searchText}&userId=${userId}`)),

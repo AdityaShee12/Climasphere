@@ -7,8 +7,8 @@ import { MdSettings, MdAdd } from "react-icons/md";
 import AirQualityCard from "./AirQualityCard.jsx";
 import { AiOutlineSearch } from "react-icons/ai";
 import { clearUser } from "../features/userSlice.js";
-import ButtomNavbar from "./buttomNavbar.jsx";
 import { Outlet } from "react-router-dom";
+import { weatherAPI } from "../api/api.js";
 
 const Homepage = () => {
   const [city, setCity] = useState("");
@@ -43,6 +43,7 @@ const Homepage = () => {
   const [dilogueBox, setDilogueBox] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [dataAnalyst, setDataAnalyst] = useState(false);
+
   // function calculateSubAQI(concentration, breakpoints) {
   //   const bp = breakpoints.find(
   //     (b) => concentration >= b.cLow && concentration <= b.cHigh
@@ -304,7 +305,8 @@ const Homepage = () => {
   const fetchDataByCity = async (cityName) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BACKEND_API}/api/weather/weatherData/${cityName}`);
+      console.log("City", cityName);
+      const res = await weatherAPI.weatherData(cityName);
       setData(res.data);
       components = res.data.pollution.list[0].components;
       const airQuality = calculateAQIFromAllPollutants(components);
@@ -316,10 +318,8 @@ const Homepage = () => {
       setweatherConditions(weatherText);
       setAQI(airQuality.aqi);
       setAQIlabel(airQuality.label);
-    } catch (err) {
-      alert("Error fetching data");
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      console.log("Error", error);
     }
   };
 
@@ -330,10 +330,10 @@ const Homepage = () => {
           const { latitude, longitude } = pos.coords;
           try {
             const res = await axios.get(
-              `${BACKEND_API}/api/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
+              `weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
             );
             const data = res.data;
-            console.log(res.data);
+            console.log("Work");
 
             fetchDataByCity(
               data.address.city || data.address.town || DEFAULT_CITY
@@ -343,7 +343,6 @@ const Homepage = () => {
           }
         },
         (error) => {
-          console.log("Geolocation error:", error);
           fetchDataByCity(DEFAULT_CITY);
         }
       );
@@ -469,6 +468,10 @@ const Homepage = () => {
     setErrorMessage(errorsms);
   }
 
+  useEffect(() => {
+    console.log("City", city);
+  }, [city]);
+
   return (
     <div>
       {loading ? (
@@ -527,7 +530,10 @@ const Homepage = () => {
 
                 <div className="flex-1 flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-full px-4 h-11 focus-within:border-slate-500 transition-colors">
                   <button
-                    onClick={() => city.trim() && fetchDataByCity(city)}
+                    onClick={() => {
+                      console.log(city);
+                      city.trim() && fetchDataByCity(city)
+                    }}
                     className="text-slate-400 flex items-center shrink-0"
                   >
                     <AiOutlineSearch size={17} />
@@ -719,7 +725,6 @@ const Homepage = () => {
                 </div>
               </div>
             </div>
-
           ) : (
             /* ── Empty state ── */
             <div className="min-h-screen flex flex-col items-center justify-center px-8 gap-6">

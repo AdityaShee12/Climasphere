@@ -3,8 +3,8 @@ import { weatherData, reverseGeocode, downloadCSV } from "../controllers/weather
 
 const router = Router();
 
-router.get("/weatherData/:cityName", weatherData);
 router.get("/reverse-geocode", reverseGeocode);
+router.get("/weatherData/:cityName", weatherData);  
 router.get("/download-csv", downloadCSV);
 
 export default router;

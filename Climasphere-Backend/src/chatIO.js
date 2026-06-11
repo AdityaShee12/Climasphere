@@ -3,14 +3,13 @@ import http from "http";
 import { Server } from "socket.io";
 import path from "path";
 import { fileURLToPath } from "url";
-import { User } from "./models/user.models.js";
 import { Message } from "./models/Message.models.js";
 import { GroupMessage } from "./models/groupMessage.models.js";
 import { Notification } from "./models/notification.models.js";
 import fs from "fs";
 import dotenv from "dotenv";
 import { FRONTEND_API } from "./Frontend_API.js";
-import { transporter } from "./sendOTP.js";
+import { User } from "./models/user/user.model.js";
 
 dotenv.config({ path: "./.env" });
 

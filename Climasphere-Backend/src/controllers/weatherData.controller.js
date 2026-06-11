@@ -8,30 +8,42 @@ const API_KEY = "5d0e7c16b9f4d577e463c5436404c021";
 
 const weatherData = async (req, res) => {
     try {
-        const city = req.params.cityName;
+        const city = req.params.cityName?.trim();
 
+        if (!city) {
+            return res.status(400).json({
+                success: false,
+                message: "City name is required",
+            });
+        }
+
+        console.log("City:", city);
+
+        // Weather API
         const weatherRes = await axios.get(
             `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
         );
 
-        const { lon, lat } = weatherRes.data.coord;
+        const { lat, lon } = weatherRes.data.coord;
 
+        // Pollution API
         const pollutionRes = await axios.get(
             `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
         );
 
-        // Reverse geocode (state detect)
+        // Reverse Geocoding API
         const geoRes = await axios.get(
-            `http://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
+            `https://api.openweathermap.org/geo/1.0/reverse?lat=${lat}&lon=${lon}&limit=1&appid=${API_KEY}`
         );
 
-        const geo = geoRes.data[0];
+        const geo = geoRes.data?.[0] || {};
 
-        const data = await Weather.create({
+        // Save in DB
+        const savedWeather = await Weather.create({
             location: {
                 country: {
                     code: weatherRes.data.sys.country,
-                    name: geo.country || "India",
+                    name: geo.country || weatherRes.data.sys.country,
                 },
                 state: {
                     name: geo.state || "Unknown",
@@ -55,24 +67,34 @@ const weatherData = async (req, res) => {
             cod: weatherRes.data.cod,
 
             pollution: {
-                aqi: pollutionRes.data.list[0].main.aqi,
-                components: pollutionRes.data.list[0].components,
-                dt: pollutionRes.data.list[0].dt,
+                aqi: pollutionRes.data.list?.[0]?.main?.aqi || null,
+                components:
+                    pollutionRes.data.list?.[0]?.components || {},
+                dt: pollutionRes.data.list?.[0]?.dt || null,
             },
         });
 
-        res.json({
+        return res.status(200).json({
+            success: true,
             weather: weatherRes.data,
             pollution: pollutionRes.data,
+            savedWeather,
         });
     } catch (err) {
-        res.status(500).json({ error: "Weather fetch failed" });
+        console.error("Weather Fetch Error:", err.response?.data || err.message);
+
+        return res.status(500).json({
+            success: false,
+            message: "Weather fetch failed",
+            error: err.response?.data || err.message,
+        });
     }
 };
 
 const reverseGeocode = async (req, res) => {
 
     const { lat, lon } = req.query;
+    console.log("laLO", lat, lon);
 
     try {
         const response = await axios.get(

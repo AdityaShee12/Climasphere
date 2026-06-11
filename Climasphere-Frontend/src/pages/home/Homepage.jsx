@@ -7,6 +7,7 @@ import { AiOutlineSearch } from "react-icons/ai";
 import { clearUser } from "../../features/userSlice.js";
 import ButtomNavbar from "../../components/ButtomNavbar.jsx";
 import { Outlet } from "react-router-dom";
+import { weatherAPI } from "../../api/api.js";
 
 const Homepage = () => {
   const [city, setCity] = useState("");
@@ -41,7 +42,7 @@ const Homepage = () => {
   const [dilogueBox, setDilogueBox] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [dataAnalyst, setDataAnalyst] = useState(false);
-  
+
   // function calculateSubAQI(concentration, breakpoints) {
   //   const bp = breakpoints.find(
   //     (b) => concentration >= b.cLow && concentration <= b.cHigh
@@ -303,7 +304,7 @@ const Homepage = () => {
   const fetchDataByCity = async (cityName) => {
     try {
       setLoading(true);
-      const res = await axios.get(`${BACKEND_API}/api/weather/weatherData/${cityName}`);
+      const res = await weatherAPI.weatherData(cityName);
       setData(res.data);
       components = res.data.pollution.list[0].components;
       const airQuality = calculateAQIFromAllPollutants(components);
@@ -332,8 +333,6 @@ const Homepage = () => {
               `${BACKEND_API}/api/weather/reverse-geocode?lat=${latitude}&lon=${longitude}`
             );
             const data = res.data;
-            console.log(res.data);
-
             fetchDataByCity(
               data.address.city || data.address.town || DEFAULT_CITY
             );
@@ -718,7 +717,6 @@ const Homepage = () => {
                 </div>
               </div>
             </div>
-
           ) : (
             /* ── Empty state ── */
             <div className="min-h-screen flex flex-col items-center justify-center px-8 gap-6">

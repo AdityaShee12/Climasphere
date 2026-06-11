@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiError } from "../utils/ApiError.js";
-import { User } from "../models/user.models.js";
+import { User } from "../models/user/user.models.js";
 import { Message } from "../models/Message.models.js";
 import { GroupMessage } from "../models/groupMessage.models.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
