@@ -138,7 +138,7 @@ const Sign_up = () => {
     setErrorMessage("");
   }
 
-return (
+  return (
     <>
       <div className="signup-root font-sans min-h-screen bg-slate-950 relative overflow-hidden">
         {loading ? (
@@ -188,8 +188,9 @@ return (
               {/* Main card */}
               <div className="bg-slate-900 border border-slate-800 rounded-2xl px-8 py-9 flex flex-col items-center shadow-2xl">
 
-                <img src="/LetterBee.png" alt="LetterBee" className="w-44 mb-2 opacity-90" />
-
+                <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-orange-400 font-extrabold tracking-tight shrink-0 select-none">
+                  ClimaSphere
+                </span>
                 <p className="text-slate-400 text-sm text-center leading-relaxed mb-7 max-w-[280px]" style={{ fontFamily: 'Playfair Display, serif' }}>
                   Sign up to see photos and videos from your friends.
                 </p>

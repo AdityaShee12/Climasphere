@@ -204,7 +204,9 @@ const Sign_up = () => {
         {/* Card */}
         <div className="w-full max-w-sm bg-slate-900 border border-slate-800 rounded-2xl p-8 flex flex-col items-center shadow-2xl">
           {/* Logo */}
-          <img src="/Title.png" alt="" className="w-48 object-contain mb-2 text-white" />
+          <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-orange-400 font-extrabold tracking-tight shrink-0 select-none">
+            ClimaSphere
+          </span>
 
           {/* Subtitle */}
           <p className="text-slate-400 text-sm text-center mt-4 mb-6 leading-relaxed">
@@ -356,7 +358,6 @@ const Sign_up = () => {
                 </button>
               </>
             )}
-
           </div>
         </div>
         {/* Login link */}

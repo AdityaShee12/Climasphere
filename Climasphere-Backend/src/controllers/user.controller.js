@@ -32,6 +32,7 @@ const sendOtp = asyncHandler(async (req, res) => {
   const generateOTP = () =>
     Math.floor(100000 + Math.random() * 900000).toString();
   const otp = generateOTP();
+  
   const mailOptions = {
     from: `"LetterBee" <${process.env.EMAIL_USER}>`,
     to: email,

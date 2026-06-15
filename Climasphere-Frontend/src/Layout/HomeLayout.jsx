@@ -1,8 +1,7 @@
-import ButtomNavbar from "../components/ButtomNavbar.jsx";
+import ButtomNavbar from "../components/ButtomNavbar";
 import { Outlet } from "react-router-dom";
 
 const HomeLayout = () => {
-
     return (
         <div>
             <Outlet />

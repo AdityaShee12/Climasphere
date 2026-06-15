@@ -2,9 +2,10 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-import weatherRouter from "./routes/weatherData.routes.js"
-import { FRONTEND_API } from "./Frontend_API.js";
 import authRoutes from "./routes/auth.route.js"
+import weatherRouter from "./routes/weatherData.routes.js"
+import insightRouter from "./routes/insight.routes.js";
+import { FRONTEND_API } from "./Frontend_API.js";
 
 const app = express();
 
@@ -52,6 +53,7 @@ app.get("/", (req, res) => {
 
 app.use("/auth", authRoutes);
 app.use("/weather", weatherRouter);
+app.use("/insight", insightRouter);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client/build")));

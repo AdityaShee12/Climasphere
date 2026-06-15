@@ -124,8 +124,6 @@ const updateVideo = asyncHandler(async (req, res) => {
 });
 
 
-
-
 const updateVideoThumbnail = asyncHandler(async (req, res) => {
   const { videoId } = req.params;
   const userId = req.user?._id;

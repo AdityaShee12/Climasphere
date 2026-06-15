@@ -2,25 +2,57 @@ import mongoose from "mongoose";
 
 const WeatherSchema = new mongoose.Schema(
   {
-    // 🌍 Location hierarchy
     location: {
       country: {
-        code: String,     // IN, US
-        name: String,     // India
+        code: {
+          type: String,
+          required: true,
+          uppercase: true,
+          trim: true,
+        },
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
       },
+
       state: {
-        name: String,     // West Bengal, Delhi, Uttar Pradesh
-        code: String,     // WB, DL, UP (optional)
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
+        code: {
+          type: String,
+          uppercase: true,
+          trim: true,
+        },
       },
+
       city: {
-        id: Number,       // OpenWeather city id
-        name: String,
+        id: {
+          type: Number,
+          required: true,
+          index: true,
+        },
+        name: {
+          type: String,
+          required: true,
+          trim: true,
+        },
       },
     },
 
     coord: {
-      lon: Number,
-      lat: Number,
+      lat: {
+        type: Number,
+        required: true,
+      },
+      lon: {
+        type: Number,
+        required: true,
+      },
     },
 
     weather: [
@@ -48,6 +80,7 @@ const WeatherSchema = new mongoose.Schema(
     wind: {
       speed: Number,
       deg: Number,
+      gust: Number,
     },
 
     clouds: {
@@ -61,13 +94,14 @@ const WeatherSchema = new mongoose.Schema(
     },
 
     timezone: Number,
-    base: String,
-    dt: Number,
-    cod: Number,
 
-    // 🌫 Pollution data
     pollution: {
-      aqi: Number,
+      aqi: {
+        type: Number,
+        min: 0,
+        max: 500,
+      },
+
       components: {
         co: Number,
         no: Number,
@@ -78,10 +112,25 @@ const WeatherSchema = new mongoose.Schema(
         pm10: Number,
         nh3: Number,
       },
+
       dt: Number,
     },
+
+    weatherTimestamp: {
+      type: Date,
+      required: true,
+      index: true,
+    },
+
+    source: {
+      type: String,
+      default: "OpenWeather",
+    },
   },
-  { timestamps: true }
+  {
+    timestamps: true,
+    versionKey: false,
+  }
 );
 
 export default mongoose.model("Weather", WeatherSchema);

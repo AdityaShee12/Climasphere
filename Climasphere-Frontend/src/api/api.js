@@ -286,4 +286,23 @@ export const userAPI = {
             api.get(`/users/searchUser?query=${searchText}&userId=${userId}`)),
 }
 
+// Insight API
+export const insightAPI = {
+
+    fetchInsight: async () => {
+        return apiRequest(() =>
+            api.get(`/insight/getInsight`)
+        );
+    },
+
+    uploadInsight: async (data) => {
+        return apiRequest(() =>
+            api.post(
+                "insight/uploadInsight",
+                data
+            )
+        );
+    }
+}
+
 export default api;

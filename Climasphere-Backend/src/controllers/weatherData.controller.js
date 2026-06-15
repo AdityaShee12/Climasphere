@@ -1,5 +1,6 @@
 import axios from "axios";
 import Weather from "../models/weather.models.js"
+import { calculateAQIFromComponents } from "../utils/aqiCalculator.js";
 import { Parser } from "json2csv";
 
 const WEATHER_API = "http://api.openweathermap.org/data/2.5/weather";
@@ -16,8 +17,6 @@ const weatherData = async (req, res) => {
                 message: "City name is required",
             });
         }
-
-        console.log("City:", city);
 
         // Weather API
         const weatherRes = await axios.get(
@@ -38,55 +37,177 @@ const weatherData = async (req, res) => {
 
         const geo = geoRes.data?.[0] || {};
 
-        // Save in DB
-        const savedWeather = await Weather.create({
-            location: {
-                country: {
-                    code: weatherRes.data.sys.country,
-                    name: geo.country || weatherRes.data.sys.country,
-                },
-                state: {
-                    name: geo.state || "Unknown",
-                },
-                city: {
-                    id: weatherRes.data.id,
-                    name: weatherRes.data.name,
-                },
+        // Pollution Components
+        const pollutionComponents =
+            pollutionRes.data.list?.[0]?.components || {};
+
+        // AQI Calculation (0 - 500)
+        const airQuality =
+            calculateAQIFromComponents(
+                pollutionComponents
+            );
+
+        // Daily Weather Entry
+        const dailyWeatherData = {
+            weatherTimestamp: new Date(
+                weatherRes.data.dt * 1000
+            ),
+
+            weather: weatherRes.data.weather,
+
+            mainWeather: {
+                temp: weatherRes.data.main.temp,
+                feels_like: weatherRes.data.main.feels_like,
+                temp_min: weatherRes.data.main.temp_min,
+                temp_max: weatherRes.data.main.temp_max,
+                pressure: weatherRes.data.main.pressure,
+                humidity: weatherRes.data.main.humidity,
+                sea_level: weatherRes.data.main.sea_level,
+                grnd_level: weatherRes.data.main.grnd_level,
             },
 
-            coord: weatherRes.data.coord,
-            weather: weatherRes.data.weather,
-            mainWeather: weatherRes.data.main,
             visibility: weatherRes.data.visibility,
-            wind: weatherRes.data.wind,
-            clouds: weatherRes.data.clouds,
-            base: weatherRes.data.base,
-            dt: weatherRes.data.dt,
-            timezone: weatherRes.data.timezone,
-            sys: weatherRes.data.sys,
-            cod: weatherRes.data.cod,
+
+            wind: {
+                speed: weatherRes.data.wind.speed,
+                deg: weatherRes.data.wind.deg,
+                gust: weatherRes.data.wind.gust || 0,
+            },
+
+            clouds: {
+                all: weatherRes.data.clouds.all,
+            },
 
             pollution: {
-                aqi: pollutionRes.data.list?.[0]?.main?.aqi || null,
-                components:
-                    pollutionRes.data.list?.[0]?.components || {},
-                dt: pollutionRes.data.list?.[0]?.dt || null,
+                aqi: airQuality.aqi,
+                label: airQuality.label,
+                components: pollutionComponents,
+                dt: pollutionRes.data.list?.[0]?.dt,
             },
-        });
+        };
+
+        // Create city document if not exists
+        // otherwise push new weather history
+        const savedWeather =
+            await Weather.findOneAndUpdate(
+                {
+                    "location.city.id":
+                        weatherRes.data.id,
+                },
+                {
+                    $setOnInsert: {
+                        location: {
+                            country: {
+                                code:
+                                    weatherRes.data.sys.country,
+                                name:
+                                    geo.country ||
+                                    weatherRes.data.sys.country,
+                            },
+
+                            state: {
+                                name:
+                                    geo.state || "Unknown",
+                                code:
+                                    geo.state_code || "",
+                            },
+
+                            city: {
+                                id: weatherRes.data.id,
+                                name:
+                                    weatherRes.data.name,
+                            },
+                        },
+
+                        coord: {
+                            lat:
+                                weatherRes.data.coord.lat,
+                            lon:
+                                weatherRes.data.coord.lon,
+                        },
+
+                        sys: {
+                            country:
+                                weatherRes.data.sys.country,
+                            sunrise:
+                                weatherRes.data.sys.sunrise,
+                            sunset:
+                                weatherRes.data.sys.sunset,
+                        },
+
+                        timezone:
+                            weatherRes.data.timezone,
+
+                        source: "OpenWeather",
+                    },
+
+                    $push: {
+                        weatherHistory:
+                            dailyWeatherData,
+                    },
+                },
+                {
+                    upsert: true,
+                    new: true,
+                    runValidators: true,
+                }
+            );
 
         return res.status(200).json({
             success: true,
-            weather: weatherRes.data,
-            pollution: pollutionRes.data,
+
+            weather: {
+                city: weatherRes.data.name,
+
+                coord: weatherRes.data.coord,
+
+                temperature:
+                    weatherRes.data.main.temp,
+
+                feels_like:
+                    weatherRes.data.main.feels_like,
+
+                humidity:
+                    weatherRes.data.main.humidity,
+
+                pressure:
+                    weatherRes.data.main.pressure,
+
+                visibility:
+                    weatherRes.data.visibility,
+
+                wind:
+                    weatherRes.data.wind,
+
+                clouds:
+                    weatherRes.data.clouds,
+
+                weatherCondition:
+                    weatherRes.data.weather,
+
+                pollution: {
+                    aqi: airQuality.aqi,
+                    label:
+                        airQuality.label,
+                    components:
+                        pollutionComponents,
+                },
+            },
+
             savedWeather,
         });
     } catch (err) {
-        console.error("Weather Fetch Error:", err.response?.data || err.message);
+        console.error(
+            "Weather Fetch Error:",
+            err.response?.data || err.message
+        );
 
         return res.status(500).json({
             success: false,
             message: "Weather fetch failed",
-            error: err.response?.data || err.message,
+            error:
+                err.response?.data ||
+                err.message,
         });
     }
 };
@@ -94,7 +215,6 @@ const weatherData = async (req, res) => {
 const reverseGeocode = async (req, res) => {
 
     const { lat, lon } = req.query;
-    console.log("laLO", lat, lon);
 
     try {
         const response = await axios.get(
