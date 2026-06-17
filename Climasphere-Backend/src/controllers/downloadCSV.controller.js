@@ -117,16 +117,6 @@ const downloadCSV = async (req, res) => {
             NH3:
                 item.pollution?.components?.nh3 ?? "",
 
-            // Time
-            WeatherTimestamp:
-                item.weatherTimestamp
-                    ? new Date(
-                        item.weatherTimestamp
-                    ).toLocaleString("en-IN", {
-                        timeZone: "Asia/Kolkata",
-                    })
-                    : "",
-
             CreatedAt:
                 item.createdAt
                     ? new Date(

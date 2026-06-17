@@ -1,8 +1,6 @@
-import axios from "axios";
-import { BACKEND_API } from "../Backend_API.js";
 import { useSelector } from "react-redux";
 import { useEffect, useState } from "react";
-import { insightAPI } from "../api/api.js";
+import { insightAPI, downloadData } from "../api/api.js";
 
 const Download = () => {
   const { userName, fullName, avatar, userProffesion } = useSelector(
@@ -12,9 +10,7 @@ const Download = () => {
   /* ---------------- CSV DOWNLOAD (UNCHANGED) ---------------- */
   const downloadCSV = async () => {
     try {
-      const res = await axios.get(`${BACKEND_API}/api/download-csv`, {
-        responseType: "blob",
-      });
+      const res = await downloadData.downloadCSV();
 
       const blob = new Blob([res.data], { type: "text/csv;charset=utf-8;" });
       const url = window.URL.createObjectURL(blob);
@@ -42,7 +38,7 @@ const Download = () => {
     try {
       const res = await insightAPI.fetchInsight();
       console.log("Res", res);
-      
+
       setInsights(res.data || []);
     } catch (err) {
       console.log("Failed to load insights");

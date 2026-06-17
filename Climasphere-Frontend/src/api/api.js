@@ -305,4 +305,11 @@ export const insightAPI = {
     }
 }
 
+export const downloadData = {
+    downloadCSV: async () => {
+        return apiRequest(() =>
+            api.get("/download/downloadCSV")
+        );
+    },
+}
 export default api;

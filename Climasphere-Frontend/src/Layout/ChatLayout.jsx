@@ -6,27 +6,38 @@ import { MdGroup, MdOutlineGroup, MdMoreVert } from "react-icons/md";
 import { FaCamera, FaPen } from "react-icons/fa";
 import { useNavigate, Outlet, useNavigationType } from "react-router-dom";
 import { useEffect, useRef } from "react";
-import axios from "axios";
-import Search from "../services/search.service.jsx";
-import StatusUpload from "../services/status.service.jsx";
-import GroupSearch from "../services/groupSearch.service.jsx";
-import Notification from "../services/notification.service.jsx";
-import { setUser, clearUser } from "../features/userSlice.js";
+import ChatSidebar from "../components/chat/ChatSidebar.jsx";
+// import StatusUpload from "../services/status.service.jsx";
+// import GroupSearch from "../services/groupSearch.service.jsx";
+// import Notification from "../services/notification.service.jsx";
+// import { setUserAvatar, setUserAbout, clearUser } from "../features/userSlice";
 import { useDispatch, useSelector } from "react-redux";
 import { TransformWrapper, TransformComponent } from "react-zoom-pan-pinch";
-import { BACKEND_API } from "../Backend_API.js";
-import { clearChatAction, clearStatusAction } from "../features/layoutSlice.js";
-import { refreshAccessToken, logoutUser } from "../services/user.service.jsx";
-import socket from "../socket.js";
+// import { clearChatAction, clearStatusAction } from "../features/layoutSlice.js";
+// import { refreshAccessToken, logoutUser } from "../services/user.service.jsx";
+import socket from "../sockets/socket.js";
+import { logoutUser } from "../services/auth.service.jsx";
+import { changeProfilePic, changeProfileAbout } from "../services/user.service.jsx";
 
 const ChatLayout = () => {
+    const [userId, setUserId] = useState("");
+    const [fullName, setFullName] = useState("");
+    const [userName, setUserName] = useState("");
     const [email, setEmail] = useState();
+    const [avatar, setAvatar] = useState("");
+    const [about, setAbout] = useState("");
+    const [editedAbout, setEditedAbout] = useState("");
+    const [isEditing, setIsEditing] = useState(false);
+    const { user } = useSelector(
+        (state) => state.user,
+    );
+    const [dilogueBox, setDilogueBox] = useState(false);
+    const [errorMessage, setErrorMessage] = useState("");
     const [searchbarWidth, setSearchbarWidth] = useState(20); // Sidebar width in percentage
     const [showFullImage, setShowFullImage] = useState(false);
     const contextRef = useRef(null);
     const navigate = useNavigate();
-    const [isEditing, setIsEditing] = useState(false);
-    const [fullName, setFullName] = useState("");
+
     const [dragStyle, setDragStyle] = useState("");
     const [barStyle, setBarStyle] = useState("");
     const windowWidth = window.innerWidth;
@@ -40,16 +51,12 @@ const ChatLayout = () => {
         x: 0,
         y: 0,
     });
-    const { userId, userName, userAvatar, userAbout } = useSelector(
-        (state) => state.user,
-    );
-    console.log("RD",userId, userName, userAvatar, userAbout);
-    
-    //const { chatAction, statusAction } = useSelector((state) => state.layout);
+
+    const { chatAction, statusAction } = useSelector((state) => state.layout);
     const [menuAnimation, setMenuAnimation] = useState(false);
     const [stateClick, setStateClick] = useState("message");
     const dispatch = useDispatch();
-    const [editedAbout, setEditedAbout] = useState(userAbout);
+
     const [isZoomed, setIsZoomed] = useState(false);
     const [state, setState] = useState("message");
     const [list, setList] = useState(false);
@@ -61,46 +68,60 @@ const ChatLayout = () => {
         setLoading(true);
     };
 
-    //   useEffect(() => {
-    //     if (navigationType === "POP") {
-    //       if (chatAction === "chatPage") {
-    //         dispatch(clearChatAction());
-    //       }
-    //       if (statusAction === "statusPage") {
-    //         dispatch(clearStatusAction());
-    //       }
-    //       setList(false);
-    //     }
-    //     console.log("Chat", chatAction);
-    //   }, [navigationType]);
+    useEffect(() => {
+        if (!user) return;
+        const { _id, email, fullName, userName, avatar, about } = user;
+        setUserId(_id);
+        setAvatar(avatar);
+        setFullName(fullName);
+        setEmail(email);
+        setUserName(userName);
+        setAbout(about);
+        console.log("AR", avatar);
 
-    //   useEffect(() => {
-    //     if (chatAction === "chatPage") {
-    //       setList(true);
-    //     }
-    //     console.log("Chat", chatAction);
-    //   }, [chatAction]);
+    }, [user]);
 
-    //   useEffect(() => {
-    //     if (statusAction === "statusPage") {
-    //       setList(true);
-    //     }
-    //     console.log("Chat", chatAction);
-    //   }, [chatAction]);
+    useEffect(() => {
+        // if (navigationType === "POP") {
+        //   if (chatAction === "chatPage") {
+        //     dispatch(clearChatAction());
+        //   }
+        //   if (statusAction === "statusPage") {
+        //     dispatch(clearStatusAction());
+        //   }
+        //   setList(false);
+        // }
+        console.log("Chat", chatAction);
+    }, [navigationType]);
+
+    useEffect(() => {
+        if (chatAction === "chatPage") {
+            setList(true);
+        }
+        console.log("Chat", chatAction);
+    }, [chatAction]);
+
+    useEffect(() => {
+        if (statusAction === "statusPage") {
+            setList(true);
+        }
+        console.log("Chat", chatAction);
+    }, [chatAction]);
 
     // useeffect for contextMenu
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (contextRef.current && !contextRef.current.contains(event.target)) {
                 closeContextMenu();
             }
         };
+
         if (contextMenu.show) {
             document.addEventListener("mousedown", handleClickOutside);
         } else {
             document.removeEventListener("mousedown", handleClickOutside);
         }
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -176,18 +197,10 @@ const ChatLayout = () => {
         const formData = new FormData();
         formData.append("userId", userId);
         if (file) formData.append("avatar", file);
-
         try {
-            const response = await axios.post(
-                `${BACKEND_API}/api/users/profilePicChange`,
-                formData,
-                {
-                    headers: { "Content-Type": "multipart/form-data" },
-                },
-            );
+            await changeProfilePic(formData, dispatch);
             setCameraLoading(false);
-            const updated = response.data.data;
-            dispatch(setUserAvatar({ userAvatar: updated.avatar }));
+            // dispatch(setUserAvatar({ userAvatar: updated.avatar }));
         } catch (error) {
             console.error("Error updating profile:", error);
         }
@@ -196,18 +209,12 @@ const ChatLayout = () => {
     // Update about section
     const handleProfileAboutChange = async (editedText) => {
         try {
-            const response = await axios.post(
-                `${BACKEND_API}/api/users/profileAboutChange`,
-                {
-                    userId,
-                    about: editedText,
-                },
-                {
-                    headers: { "Content-Type": "application/json" },
-                },
-            );
-            const updated = response.data.data;
-            dispatch(setUserAbout({ userAbout: updated.about }));
+            const aboutData = {
+                userId,
+                about: editedText,
+            };
+            await changeProfileAbout(aboutData, dispatch);
+            setAbout(editedText);
         } catch (error) {
             console.error("Error updating profile:", error);
         }
@@ -217,25 +224,25 @@ const ChatLayout = () => {
     const handleLogout = async () => {
         loadingFunc();
         try {
-            const response = await logoutUser();
+            const response = await logoutUser(dispatch);
             if (response) {
                 socket.disconnect();
-                navigate("/sign_in");
-                dispatch(clearUser());
+                navigate("/");
             }
         } catch (error) {
             if (error.response?.status === 401) {
                 try {
                     await refreshAccessToken();   // try refresh
                     // Retry logout
-                    await logoutUser();
+                    await logoutUser(dispatch, userId);
                     socket.disconnect();
-                    dispatch(clearUser());
-                    navigate("/sign_in");
+                    navigate("/");
                 } catch (refreshError) {
+                    console.log("Refresherr", refreshError);
+
                     // Refresh failed → force logout
                     dispatch(clearUser());
-                    navigate("/sign_in");
+                    navigate("/");
                 }
             } else {
                 console.log("Other error:", error);
@@ -285,11 +292,13 @@ const ChatLayout = () => {
                 closeContextGroup();
             }
         };
+
         if (contextGroup.show) {
             document.addEventListener("mousedown", handleClickOutside);
         } else {
             document.removeEventListener("mousedown", handleClickOutside);
         }
+
         return () => {
             document.removeEventListener("mousedown", handleClickOutside);
         };
@@ -301,9 +310,15 @@ const ChatLayout = () => {
 
     // Status upload system
     const statusUpload = () => {
-        setStateClick(true);
-        stateChange("status");
+        setErrorMessage("The status uploading system will be available soon");
+        setDilogueBox(true);
     };
+
+    // Notification showing system
+    const notification = () => {
+        setErrorMessage("The notification showing system will be available soon");
+        setDilogueBox(true);
+    }
 
     const chat = () => {
         setStateClick("message");
@@ -311,231 +326,224 @@ const ChatLayout = () => {
     };
 
     const group = () => {
-        closeContextGroup();
-        setStateClick("groupSearch");
+        setErrorMessage("The group chat system will be available soon");
+        setDilogueBox(true);
     };
-
+    const onClose = () => {
+        if (errorMessage) {
+            setDilogueBox(false);
+        }
+    };
     return (
-        <div>
+        <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#020617' }}>
             {loading ? (
                 <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950">
-                    <div className="w-12 h-12 border-4 border-orange-400 border-dashed rounded-full animate-spin"></div>
-                    <p className="mt-4 text-slate-400 text-sm">Loading...</p>
+                    <style>{`
+            @keyframes pulse-ring {
+              0%   { transform: scale(0.8); opacity: 1; }
+              100% { transform: scale(2);   opacity: 0; }
+            }
+            @keyframes fade-up {
+              0%   { opacity: 0; transform: translateY(8px); }
+              100% { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes dot-bounce {
+              0%, 80%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+              40%           { opacity: 1;   transform: scaleY(1); }
+            }
+            .pulse-ring-1 { animation: pulse-ring 1.8s ease-out infinite; }
+            .pulse-ring-2 { animation: pulse-ring 1.8s ease-out infinite; animation-delay: 0.6s; }
+            .fade-up-text { animation: fade-up 0.6s ease forwards; }
+            .dot-1 { animation: dot-bounce 1.2s ease-in-out infinite; }
+            .dot-2 { animation: dot-bounce 1.2s ease-in-out infinite; animation-delay: 0.15s; }
+            .dot-3 { animation: dot-bounce 1.2s ease-in-out infinite; animation-delay: 0.3s; }
+          `}</style>
+
+                    <div className="relative w-14 h-14 flex items-center justify-center mb-7">
+                        <span className="pulse-ring-1 absolute w-14 h-14 rounded-full border-2 border-orange-500" />
+                        <span className="pulse-ring-2 absolute w-14 h-14 rounded-full border-2 border-orange-500" />
+                        <span className="absolute w-14 h-14 rounded-full border-[3px] border-slate-800 border-t-orange-500 border-r-orange-500 animate-[spin_0.9s_cubic-bezier(0.4,0,0.2,1)_infinite]" />
+                        <span className="absolute w-9 h-9 rounded-full border-2 border-slate-800 border-b-orange-400 animate-[spin_0.7s_cubic-bezier(0.4,0,0.2,1)_infinite_reverse]" />
+                    </div>
+                    <p className="fade-up-text text-slate-200 text-sm font-medium tracking-wide mb-2">
+                        Loading
+                    </p>
+                    <div className="flex items-center gap-1">
+                        <span className="dot-1 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+                        <span className="dot-2 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+                        <span className="dot-3 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+                    </div>
                 </div>
             ) : (
-                <div className={`flex flex-col h-screen overflow-hidden bg-slate-950 ${dragStyle}`}>
+                <div className={`flex flex-col h-screen overflow-hidden relative z-10 ${dragStyle}`}>
                     <div className="flex-1 relative">
 
                         {/* ===================== DESKTOP ===================== */}
                         <div className="hidden lg:flex h-full">
 
-                            {/* Left icon column */}
-                            <div className="flex flex-col items-center justify-between py-6 w-16 bg-slate-900 border-r border-slate-800 shrink-0">
+                            {/* Left Icons Column */}
+                            <div className="flex flex-col items-center h-full w-[68px] bg-slate-900 border-r border-slate-800 z-20 py-4 flex-shrink-0">
 
                                 {/* Logo */}
-                                <img src="/LB.png" alt="" className="w-8 h-6 object-contain" />
+                                <span className="text-orange-400 font-extrabold text-[15px] md:text-lg tracking-tight shrink-0 select-none w-[2.2rem] h-[2.2rem] ">
+                                    ClimaSphere
+                                </span>
 
-                                {/* Nav icons */}
-                                <div className="flex flex-col items-center gap-5">
-                                    {/* Messages */}
+
+                                {/* Icons */}
+                                <div className="flex flex-col items-center gap-[0.5rem] flex-1">
+                                    {/* message */}
                                     <button
-                                        onClick={() => chat()}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "message"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-                                        }`}>
-                                        {state === "message"
-                                            ? <AiFillMessage size={22} />
-                                            : <AiOutlineMessage size={22} />}
+                                        className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+                                        style={{
+                                            color: state === "message" ? '#f97316' : '#475569',
+                                            background: state === "message" ? 'rgba(249,115,22,0.10)' : 'transparent',
+                                        }}
+                                        onClick={() => chat()}>
+                                        {state === "message" ? (
+                                            <AiFillMessage size={24} />
+                                        ) : (
+                                            <AiOutlineMessage size={24} onClick={() => stateChange("message")} />
+                                        )}
                                     </button>
 
-                                    {/* Groups */}
+                                    {/* Group message */}
                                     <button
-                                        onClick={() => group()}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            stateClick === "groupSearch"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-                                        }`}>
-                                        {stateClick === "groupSearch"
-                                            ? <MdGroup size={22} />
-                                            : <MdOutlineGroup size={22} />}
+                                        className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+                                        style={{
+                                            color: state === "groupMessage" ? '#f97316' : '#475569',
+                                            background: state === "groupMessage" ? 'rgba(249,115,22,0.10)' : 'transparent',
+                                        }}
+                                        onClick={() => group()}>
+                                        {state === "groupMessage" ? (
+                                            <MdGroup size={24} />
+                                        ) : (
+                                            <MdOutlineGroup size={24} onClick={() => stateChange("groupMessage")} />
+                                        )}
                                     </button>
 
-                                    {/* Status */}
+                                    {/* status */}
                                     <button
-                                        onClick={statusUpload}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "status"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-                                        }`}>
-                                        {state === "status"
-                                            ? <FaCirclePlay size={20} />
-                                            : <FaRegCirclePlay size={20} />}
+                                        className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+                                        style={{
+                                            color: state === "status" ? '#f97316' : '#475569',
+                                            background: state === "status" ? 'rgba(249,115,22,0.10)' : 'transparent',
+                                        }}
+                                        onClick={statusUpload}>
+                                        {state === "status" ? (
+                                            <FaCirclePlay size={24} />
+                                        ) : (
+                                            <FaRegCirclePlay size={24} onClick={() => stateChange("status")} />
+                                        )}
                                     </button>
 
-                                    {/* Notification */}
+                                    {/* notification */}
                                     <button
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "notification"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:bg-slate-800 hover:text-slate-100"
-                                        }`}>
-                                        {state === "notification"
-                                            ? <AiFillNotification size={22} />
-                                            : <AiOutlineNotification size={22} />}
+                                        className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+                                        style={{
+                                            color: state === "notification" ? '#f97316' : '#475569',
+                                            background: state === "notification" ? 'rgba(249,115,22,0.10)' : 'transparent',
+                                        }}
+                                        onClick={notification}>
+
+                                        {state === "notification" ? (
+                                            <AiFillNotification size={24} />
+                                        ) : (
+                                            <AiOutlineNotification size={24} onClick={() => stateChange("notification")} />
+                                        )}
                                     </button>
                                 </div>
 
                                 {/* Avatar */}
-                                <button
-                                    onClick={(e) => openContextMenu(e)}
-                                    className="w-9 h-9 rounded-full ring-2 ring-slate-700 hover:ring-orange-400 transition-all overflow-hidden">
-                                    <img src={userAvatar} alt="" className="w-full h-full object-cover" />
-                                </button>
+                                <div
+                                    className="w-[38px] h-[38px] rounded-full border-2 cursor-pointer flex-shrink-0 overflow-hidden"
+                                    style={{ borderColor: '#334155' }}
+                                    onClick={(e) => openContextMenu(e)}>
+                                    <img src={avatar} alt="" className="w-full h-full rounded-full object-cover" />
+                                </div>
                             </div>
 
-                            {/* Search / sidebar panel */}
+                            {/* Left sidebar panel */}
                             <div
                                 style={{ width: `${searchbarWidth - 3.5}%` }}
-                                className="flex flex-col bg-slate-900 border-r border-slate-800 overflow-hidden">
+                                className="h-full z-10 bg-slate-900 border-r border-slate-800">
                                 {stateClick === "message" && (
-                                    <div className="flex flex-col h-full">
-                                        <div className="flex justify-end px-3 pt-3">
+                                    <div className="ml-[1rem] h-full flex flex-col">
+                                        <div className="flex justify-end mt-[1.7rem]">
                                             <button
-                                                onClick={(e) => openContextGroup(e)}
-                                                className="w-8 h-8 flex items-center justify-center rounded-lg text-slate-400 hover:bg-slate-800 hover:text-slate-100 transition-colors">
-                                                <MdMoreVert size={20} />
+                                                className="p-2 rounded-xl text-slate-500 hover:text-orange-400 hover:bg-orange-500/10 transition-colors mr-[0.5rem]"
+                                                onClick={(e) => openContextGroup(e)}>
+                                                <MdMoreVert size={27} />
                                             </button>
                                         </div>
-                                        <div className="flex-1 overflow-y-auto">
-                                            <Search />
-                                        </div>
+                                        <ChatSidebar />
                                     </div>
                                 )}
-                                {stateClick === "status" && <StatusUpload />}
-                                {stateClick === "groupSearch" && <GroupSearch />}
-                                {stateClick === "Notification" && <Notification />}
+                                {stateClick === "status" && <div></div>}
+                                {stateClick === "groupSearch" && <div><GroupSearch /></div>}
+                                {stateClick === "Notification" && <div><Notification /></div>}
                             </div>
 
                             {/* Drag bar */}
                             <div
-                                className={`w-px bg-slate-800 cursor-ew-resize hover:w-1 hover:bg-orange-400 transition-all ${barStyle}`}
+                                className={`w-[1px] bg-slate-800 hover:w-[3px] hover:bg-orange-500/40 cursor-ew-resize transition-all h-full z-20 ${barStyle}`}
                                 onMouseDown={handleMouseDown}
                             />
 
-                            {/* Outlet */}
-                            <div className="flex-1 overflow-hidden">
+                            {/* Right side Outlet */}
+                            <div className="flex-1 h-full z-10 bg-slate-950">
                                 <Outlet />
                             </div>
                         </div>
 
                         {/* ===================== MOBILE ===================== */}
-                        <div className="lg:hidden flex flex-col h-full bg-slate-950">
-
-                            {/* Top bar */}
-                            {!list && (
-                                <div className="flex items-center px-4 pt-4 pb-2">
-                                    <img src="/LB.png" alt="" className="w-8 h-6 object-contain" />
-                                </div>
-                            )}
-
-                            {/* Search / Status */}
-                            {!list && (
-                                <div className="px-3 pb-2">
-                                    {stateClick ? <Search /> : <StatusUpload />}
-                                </div>
-                            )}
-
-                            {/* Outlet */}
+                        <div className="lg:hidden flex flex-col h-full z-10">
                             <div className="flex-1 overflow-auto">
                                 <Outlet />
                             </div>
 
-                            {/* Bottom nav */}
-                            {!list && (
-                                <div className="h-16 flex justify-around items-center border-t border-slate-800 bg-slate-900/90 backdrop-blur-xl px-4">
-                                    {/* Messages */}
-                                    <button
-                                        onClick={() => chat()}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "message"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:text-slate-100"
-                                        }`}>
-                                        {state === "message"
-                                            ? <AiFillMessage size={24} />
-                                            : <AiOutlineMessage size={24} />}
-                                    </button>
-
-                                    {/* Status */}
-                                    <button
-                                        onClick={statusUpload}
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "status"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:text-slate-100"
-                                        }`}>
-                                        {state === "status"
-                                            ? <FaCirclePlay size={22} />
-                                            : <FaRegCirclePlay size={22} />}
-                                    </button>
-
-                                    {/* Notification */}
-                                    <button
-                                        className={`w-10 h-10 flex items-center justify-center rounded-xl transition-colors ${
-                                            state === "notification"
-                                                ? "bg-orange-500/15 text-orange-400"
-                                                : "text-slate-400 hover:text-slate-100"
-                                        }`}
-                                        onClick={() =>
-                                            state !== "notification" &&
-                                            alert("The notification feature will be available within one week")
-                                        }>
-                                        {state === "notification"
-                                            ? <AiFillNotification size={24} />
-                                            : <AiOutlineNotification size={24} />}
-                                    </button>
-
-                                    {/* Avatar */}
-                                    <button
-                                        onClick={(e) => openContextMenu(e)}
-                                        className="w-9 h-9 rounded-full ring-2 ring-slate-700 hover:ring-orange-400 transition-all overflow-hidden">
-                                        <img src={userAvatar} alt="" className="w-full h-full object-cover" />
-                                    </button>
-                                </div>
-                            )}
+                            <div
+                                className={`${list ? "hidden" : "flex"} h-[4rem] justify-between items-center gap-6 px-[1.4rem] border-t`}
+                                style={{ backgroundColor: '#0f172a', borderColor: '#1e293b' }}>
+                                {/* mobile buttons */}
+                            </div>
                         </div>
 
-                        {/* ===================== CONTEXT MENU (Profile) ===================== */}
+                        {/* ===================== CONTEXT MENU ===================== */}
                         {contextMenu.show && (
                             <div
                                 ref={contextRef}
-                                className={`absolute z-50 w-72 bg-slate-800 border border-slate-700 rounded-2xl p-4 shadow-2xl transition-all duration-300 ease-out ${
-                                    menuAnimation
-                                        ? "opacity-100 translate-x-0"
-                                        : "opacity-0 translate-x-6 lg:-translate-x-6"
-                                }`}
-                                style={{ top: contextMenu.y, left: contextMenu.x }}
+                                className="absolute rounded-2xl w-72 p-5 z-50 border transition-all duration-300 ease-out"
+                                style={{
+                                    top: contextMenu.y,
+                                    left: contextMenu.x,
+                                    backgroundColor: '#0f172a',
+                                    borderColor: '#1e293b',
+                                    boxShadow: '0 20px 40px rgba(0,0,0,0.5)',
+                                    color: '#f1f5f9',
+                                    opacity: menuAnimation ? 1 : 0,
+                                    transform: menuAnimation ? 'translateX(24px)' : 'translateX(0)'
+                                }}
                                 onClick={(e) => e.stopPropagation()}>
 
-                                {/* Avatar + name */}
-                                <div className="flex flex-col items-start">
+                                <div className="flex flex-col items-start relative w-full">
                                     <div className="relative">
                                         {cameraLoading ? (
-                                            <div className="w-20 h-20 rounded-full bg-slate-700 flex items-center justify-center">
-                                                <div className="w-8 h-8 border-4 border-orange-400 border-dashed rounded-full animate-spin" />
+                                            <div className="w-24 h-24 rounded-full border-4 border-slate-700 shadow-md flex justify-center items-center bg-slate-800">
+                                                <div className="w-10 h-10 border-[3px] border-orange-500/20 border-t-orange-500 rounded-full animate-spin"></div>
                                             </div>
                                         ) : (
-                                            <div className="relative w-20 h-20">
+                                            <div className="relative w-24 h-24">
                                                 {isZoomed ? (
-                                                    <div className="fixed inset-0 flex items-center justify-center bg-black/80 z-[9999]">
-                                                        <TransformWrapper initialScale={1} wheel={{ step: 0.1 }} pinch={{ step: 5 }} doubleClick={{ disabled: true }}>
+                                                    <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+                                                        <TransformWrapper
+                                                            initialScale={1}
+                                                            wheel={{ step: 0.1 }}
+                                                            pinch={{ step: 5 }}
+                                                            doubleClick={{ disabled: true }}>
                                                             <TransformComponent>
                                                                 <img
-                                                                    src={userAvatar}
+                                                                    src={avatar}
                                                                     className="max-w-full max-h-full"
                                                                     onClick={() => setIsZoomed(false)}
                                                                 />
@@ -544,451 +552,347 @@ const ChatLayout = () => {
                                                     </div>
                                                 ) : (
                                                     <img
-                                                        src={userAvatar}
+                                                        src={avatar}
                                                         alt="Profile"
                                                         onClick={() => setIsZoomed(true)}
-                                                        className="w-20 h-20 rounded-full object-cover ring-2 ring-slate-600 cursor-pointer"
+                                                        className="w-24 h-24 rounded-full object-cover border-4 border-slate-800 shadow-md cursor-pointer"
                                                     />
                                                 )}
-                                                <label className="absolute -bottom-1 -right-1 bg-slate-700 border border-slate-600 p-1.5 rounded-full shadow cursor-pointer hover:bg-slate-600 transition-colors">
+                                                <label className="absolute -bottom-1 -right-1 bg-slate-800 border border-slate-700 p-1.5 rounded-full shadow cursor-pointer">
                                                     <FaCamera className="text-orange-400 text-xs" />
-                                                    <input type="file" className="hidden" onChange={handleProfilePicChange} />
+                                                    <input
+                                                        type="file"
+                                                        className="hidden"
+                                                        onChange={handleProfilePicChange}
+                                                    />
                                                 </label>
                                             </div>
                                         )}
                                         <p className="mt-3 font-semibold text-sm text-slate-100">{userName}</p>
                                     </div>
 
-                                    {/* About */}
-                                    <div className="w-full mt-3">
+                                    <div className="w-full mt-3 relative">
                                         {isEditing ? (
                                             <>
                                                 <textarea
                                                     value={editedAbout}
                                                     onChange={(e) => setEditedAbout(e.target.value)}
-                                                    className="w-full p-2 border border-slate-600 rounded-lg text-sm resize-none bg-slate-700 text-slate-100 outline-none focus:border-orange-400 transition-colors"
+                                                    className="w-full p-2 border border-orange-500/30 focus:border-orange-500 rounded-xl text-sm resize-none bg-slate-800 text-slate-100 outline-none transition-all"
                                                     rows={2}
                                                 />
                                                 <button
-                                                    onClick={() => {
-                                                        handleProfileAboutChange(editedAbout);
+                                                    onClick={async () => {
+                                                        await handleProfileAboutChange(editedAbout);
                                                         setIsEditing(false);
                                                     }}
-                                                    className="mt-2 bg-orange-500 text-white px-3 py-1 text-sm rounded-lg hover:bg-orange-600 transition-colors">
+                                                    className="mt-2 bg-orange-500 hover:bg-orange-600 text-white px-4 py-1.5 text-sm rounded-xl transition-colors"
+                                                >
                                                     Save
                                                 </button>
                                             </>
                                         ) : (
                                             <div className="flex justify-between items-center w-full">
-                                                <p className="text-sm text-slate-400">{userAbout || "No about info"}</p>
+                                                <p className="text-sm text-slate-200">
+                                                    {about || "No about info"}
+                                                </p>
                                                 <FaPen
-                                                    className="text-orange-400 text-xs cursor-pointer ml-2 shrink-0"
-                                                    onClick={() => { setEditedAbout(userAbout); setIsEditing(true); }}
+                                                    className="text-orange-400 text-xs cursor-pointer ml-2 flex-shrink-0"
+                                                    onClick={() => {
+                                                        setEditedAbout(about);
+                                                        setIsEditing(true);
+                                                    }}
                                                 />
                                             </div>
                                         )}
                                     </div>
 
-                                    <p className="text-xs text-slate-500 mt-1">{email}</p>
+                                    <p className="text-sm text-slate-500 mt-2">{email}</p>
                                 </div>
-
-                                <div className="h-px bg-slate-700 my-3" />
 
                                 <button
                                     onClick={handleLogout}
-                                    className="w-full text-center bg-red-500/15 hover:bg-red-500/25 text-red-400 py-2 rounded-xl text-sm transition-colors">
-                                    Log Out
-                                </button>
-                            </div>
-                        )}
-
-                        {/* Full image overlay */}
-                        {showFullImage && (
-                            <div
-                                className="fixed inset-0 bg-black/90 flex items-center justify-center z-[9999]"
-                                onClick={() => setShowFullImage(false)}>
-                                <img src={userAvatar} alt="Full Profile" className="max-w-full max-h-full object-contain" />
-                            </div>
-                        )}
-
-                        {/* ===================== CONTEXT MENU (Group) ===================== */}
-                        {contextGroup.show && (
-                            <div
-                                ref={contextRef}
-                                className={`absolute z-50 w-48 bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-2xl transition-all duration-300 ease-out ${
-                                    menuAnimation
-                                        ? "opacity-100 translate-y-0"
-                                        : "opacity-0 -translate-y-2"
-                                }`}
-                                style={{ top: contextGroup.y, left: contextGroup.x }}
-                                onClick={(e) => e.stopPropagation()}>
-                                <button
-                                    onClick={group}
-                                    className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors">
-                                    New Group
+                                    className="mt-6 w-full text-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 text-red-400 py-2 rounded-xl transition-colors font-medium tracking-wide">
+                                    Log out
                                 </button>
                             </div>
                         )}
                     </div>
                 </div>
             )}
+            {dilogueBox && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center">
+                    <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+                    <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center">
+                        <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <circle cx="12" cy="12" r="10" />
+                                <line x1="12" y1="8" x2="12" y2="12" />
+                                <line x1="12" y1="16" x2="12.01" y2="16" />
+                            </svg>
+                        </div>
+                        <h2 className="text-base font-semibold text-red-400 mb-2">Error</h2>
+                        <p className="text-slate-400 text-sm mb-6 leading-relaxed">{errorMessage}</p>
+                        <button
+                            onClick={onClose}
+                            className="w-full bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold text-sm h-11 rounded-xl transition-all duration-200">
+                            OK
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     );
-    // return (
-    //     <div>
-    //         {loading ? (
-    //             <div className="h-screen w-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900">
-    //                 <div className="w-12 h-12 border-4 border-[#4337e6] border-dashed rounded-full animate-spin"></div>
-    //                 <p className="mt-4 text-gray-600 dark:text-gray-300">loading...</p>
-    //             </div>
-    //         ) : (
-    //             <div className={`flex flex-col h-screen overflow-hidden ${dragStyle}`}>
-    //                 <div className="flex-1 relative">
-    //                     {/* ===================== DESKTOP (unchanged) ===================== */}
-
-    //                     <div className="hidden lg:flex h-full">
-    //                         {/* Logo */}
-    //                         <img
-    //                             src="/LB.png"
-    //                             alt=""
-    //                             className="absolute w-[3rem] h-[2rem] mt-[1.5rem] ml-[1.5rem]"
-    //                         />
-
-    //                         {/* Left Icons Column */}
-    //                         <div className="flex flex-col my-[12rem] gap-[2rem] ml-[1.5rem]">
-    //                             {/* message */}
-    //                             <button
-    //                                 className="pl-[0.3rem] rounded-full hover:bg-gray-200"
-    //                                 onClick={() => chat()}>
-    //                                 {state === "message" ? (
-    //                                     <AiFillMessage size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <AiOutlineMessage
-    //                                         size={33}
-    //                                         onClick={() => stateChange("message")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* Group message */}
-    //                             <button
-    //                                 className="pl-[0.3rem] rounded-full hover:bg-gray-200"
-    //                                 onClick={() => group()}>
-    //                                 {state === "groupMessage" ? (
-    //                                     <MdGroup size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <MdOutlineGroup
-    //                                         size={33}
-    //                                         onClick={() => stateChange("groupMessage")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* status */}
-    //                             <button
-    //                                 className="pl-[0.3rem] rounded-full hover:bg-gray-200"
-    //                                 onClick={statusUpload}>
-    //                                 {state === "status" ? (
-    //                                     <FaCirclePlay size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <FaRegCirclePlay
-    //                                         size={33}
-    //                                         onClick={() => stateChange("status")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* notification */}
-    //                             <button className="pl-[0.3rem] rounded-full">
-    //                                 {state === "notification" ? (
-    //                                     <AiFillNotification size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <AiOutlineNotification
-    //                                         size={33}
-    //                                         onClick={() => stateChange("notification")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* avatar */}
-    //                             <div
-    //                                 className="pl-[0.3rem]"
-    //                                 onClick={(e) => openContextMenu(e)}>
-    //                                 <img
-    //                                     src={userAvatar}
-    //                                     alt=""
-    //                                     className="w-[2rem] h-[2rem] rounded-full object-cover"
-    //                                 />
-    //                             </div>
-    //                         </div>
-
-    //                         {/* Left side of layout */}
-    //                         <div
-    //                             style={{ width: `${searchbarWidth - 3.5}%` }}
-    //                             className="">
-    //                             {stateClick === "message" && (
-    //                                 <div className="ml-[2rem]">
-    //                                     <div className="flex justify-end mt-[1.7rem]">
-    //                                         <button
-    //                                             className="p-1 rounded-full hover:bg-gray-200 mr-[0.5rem]"
-    //                                             onClick={(e) => openContextGroup(e)}>
-    //                                             <MdMoreVert size={27} />
-    //                                         </button>
-    //                                     </div>
-    //                                     <Search />
-    //                                 </div>
-    //                             )}
-    //                             {stateClick === "status" && (
-    //                                 <div>
-    //                                     <StatusUpload />
-    //                                 </div>
-    //                             )}
-    //                             {stateClick === "groupSearch" && (
-    //                                 <div>
-    //                                     <GroupSearch />
-    //                                 </div>
-    //                             )}
-    //                             {stateClick === "Notification" && (
-    //                                 <div>
-    //                                     <Notification />
-    //                                 </div>
-    //                             )}
-    //                         </div>
-
-    //                         {/* Drag bar */}
-    //                         <div
-    //                             className={`w-[0.1rem] bg-[#4337e6] cursor-ew-resize hover:w-[0.5rem] ${barStyle}`}
-    //                             onMouseDown={handleMouseDown}
-    //                         />
-
-    //                         {/* Outlet */}
-    //                         <div className="flex-1">
-    //                             <Outlet />
-    //                         </div>
-    //                     </div>
-
-    //                     {/* ===================== MOBILE ===================== */}
-
-    //                     <div className="lg:hidden flex flex-col h-full">
-    //                         {/* Top bar */}
-    //                         <div className={`${list ? "hidden" : "visible"} `}>
-    //                             {" "}
-    //                             <img
-    //                                 src="/LB.png"
-    //                                 alt=""
-    //                                 className="absolute w-[3rem] h-[2rem] mt-[1.5rem] ml-[1.5rem]"
-    //                             />
-    //                         </div>
-
-    //                         {/* Search / Status full width */}
-    //                         <div className={`${list ? "hidden" : "visible"} p-2`}>
-    //                             {stateClick ? <Search /> : <StatusUpload />}
-    //                         </div>
-
-    //                         {/* Outlet middle */}
-    //                         <div className="flex-1 overflow-auto">
-    //                             <Outlet />
-    //                         </div>
-
-    //                         {/* Bottom icon row (RIGHT aligned) */}
-    //                         <div
-    //                             className={`${list ? "hidden" : "visible"
-    //                                 } h-[4rem] flex justify-between items-center gap-6 px-[1.4rem] border-t border-[#4337e6] relative`}>
-    //                             <button
-    //                                 className="pl-[0.3rem] rounded-full hover:bg-gray-200"
-    //                                 onClick={() => chat()}>
-    //                                 {state === "message" ? (
-    //                                     <AiFillMessage size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <AiOutlineMessage
-    //                                         size={33}
-    //                                         onClick={() => stateChange("message")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* status */}
-    //                             <button
-    //                                 className="pl-[0.3rem] rounded-full hover:bg-gray-200"
-    //                                 onClick={statusUpload}>
-    //                                 {state === "status" ? (
-    //                                     <FaCirclePlay size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <FaRegCirclePlay
-    //                                         size={33}
-    //                                         onClick={() => stateChange("status")}
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* notification */}
-    //                             <button className="pl-[0.3rem] rounded-full">
-    //                                 {state === "notification" ? (
-    //                                     <AiFillNotification size={33} className="text-[#4337e6]" />
-    //                                 ) : (
-    //                                     <AiOutlineNotification
-    //                                         size={33}
-    //                                         onClick={() =>
-    //                                             alert(
-    //                                                 "The notification feature will be available within one week",
-    //                                             )
-    //                                         }
-    //                                     />
-    //                                 )}
-    //                             </button>
-
-    //                             {/* avatar */}
-    //                             <div
-    //                                 className="pl-[0.3rem]"
-    //                                 onClick={(e) => openContextMenu(e)}>
-    //                                 <img
-    //                                     src={userAvatar}
-    //                                     alt=""
-    //                                     className="w-[2rem] h-[2rem] rounded-full object-cover"
-    //                                 />
-    //                             </div>
-    //                         </div>
-    //                     </div>
-    //                     {/* ===================== CONTEXT MENU ===================== */}
-    //                     {contextMenu.show && (
-    //                         <div
-    //                             ref={contextRef}
-    //                             className={`absolute rounded-xl w-72 h-72 p-4 z-50 shadow-2xl border 
-    //              bg-slate-400 transition-all duration-300 ease-out
-    //              ${menuAnimation
-    //                                     ? "opacity-100 translate-x-0"
-    //                                     : "opacity-0 translate-x-6 lg:-translate-x-6"
-    //                                 }`}
-    //                             style={{
-    //                                 top: contextMenu.y,
-    //                                 left: contextMenu.x,
-    //                             }}
-    //                             onClick={(e) => e.stopPropagation()}>
-    //                             {/* Profile section */}
-    //                             <div className="flex flex-col items-start relative w-full">
-    //                                 <div className="relative">
-    //                                     {cameraLoading ? (
-    //                                         <div className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg flex justify-center items-center">
-    //                                             {" "}
-    //                                             <div className="w-12 h-12 border-4 border-[#4337e6] border-dashed rounded-full animate-spin"></div>
-    //                                         </div>
-    //                                     ) : (
-    //                                         <div className="relative w-24 h-24">
-    //                                             {isZoomed ? (
-    //                                                 <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80">
-    //                                                     <TransformWrapper
-    //                                                         initialScale={1}
-    //                                                         wheel={{ step: 0.1 }}
-    //                                                         pinch={{ step: 5 }}
-    //                                                         doubleClick={{ disabled: true }}>
-    //                                                         <TransformComponent>
-    //                                                             <img
-    //                                                                 src={userAvatar}
-    //                                                                 className="max-w-full max-h-full"
-    //                                                                 onClick={() => setIsZoomed(false)}
-    //                                                             />
-    //                                                         </TransformComponent>
-    //                                                     </TransformWrapper>
-    //                                                 </div>
-    //                                             ) : (
-    //                                                 <img
-    //                                                     src={userAvatar}
-    //                                                     alt="Profile"
-    //                                                     onClick={() => setIsZoomed(true)}
-    //                                                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
-    //                                                 />
-    //                                             )}
-    //                                             <label className="absolute -bottom-1 -right-1 bg-white border border-gray-300 p-1 rounded-full shadow cursor-pointer mr-[0.7rem]">
-    //                                                 <FaCamera className="text-blue-600 text-xs" />
-    //                                                 <input
-    //                                                     type="file"
-    //                                                     className="hidden"
-    //                                                     onChange={handleProfilePicChange}
-    //                                                 />
-    //                                             </label>
-    //                                         </div>
-    //                                     )}
-    //                                     <p className="mt-3 font-medium text-sm">{userName}</p>
-    //                                 </div>
-
-    //                                 <div className="w-full mt-3 relative">
-    //                                     {isEditing ? (
-    //                                         <>
-    //                                             <textarea
-    //                                                 value={editedAbout}
-    //                                                 onChange={(e) => setEditedAbout(e.target.value)}
-    //                                                 className="w-full p-2 border border-blue-300 rounded text-sm resize-none bg-white text-gray-800"
-    //                                                 rows={2}
-    //                                             />
-    //                                             <button
-    //                                                 onClick={() => {
-    //                                                     handleProfileAboutChange(editedAbout);
-    //                                                     setIsEditing(false);
-    //                                                 }}
-    //                                                 className="mt-2 bg-blue-600 text-white px-3 py-1 text-sm rounded hover:bg-blue-700 transition">
-    //                                                 Save
-    //                                             </button>
-    //                                         </>
-    //                                     ) : (
-    //                                         <div className="flex justify-between items-center w-full">
-    //                                             <p className="text-sm text-gray-800">
-    //                                                 {userAbout || "No about info"}
-    //                                             </p>
-    //                                             <FaPen
-    //                                                 className="text-blue-500 text-xs cursor-pointer ml-2"
-    //                                                 onClick={() => {
-    //                                                     setEditedAbout(userAbout);
-    //                                                     setIsEditing(true);
-    //                                                 }}
-    //                                             />
-    //                                         </div>
-    //                                     )}
-    //                                 </div>
-
-    //                                 <p className="text-sm text-gray-600 mt-2">{email}</p>
-    //                             </div>
-    //                             <button
-    //                                 onClick={handleLogout}
-    //                                 className="mt-4 w-full text-center bg-red-100 hover:bg-red-200 text-red-600 py-1 rounded-md transition">
-    //                                 Log out
-    //                             </button>
-    //                         </div>
-    //                     )}
-    //                     { }
-    //                     {showFullImage && (
-    //                         <div
-    //                             className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[9999]"
-    //                             onClick={() => setShowFullImage(false)}>
-    //                             <img
-    //                                 src={userAvatar}
-    //                                 alt="Full Profile"
-    //                                 className="max-w-full max-h-full object-contain rounded-none"
-    //                             />
-    //                         </div>
-    //                     )}
-    //                     {contextGroup.show && (
-    //                         <div
-    //                             ref={contextRef}
-    //                             className={`absolute rounded-xl w-[13rem] h-[16rem] p-4 z-50 shadow-2xl border 
-    //              bg-slate-400 transition-all duration-300 ease-out
-    //              ${menuAnimation
-    //                                     ? "opacity-100 translate-y-0"
-    //                                     : "opacity-0 -translate-y-6"
-    //                                 }`}
-    //                             style={{
-    //                                 top: contextGroup.y,
-    //                                 left: contextGroup.x,
-    //                             }}
-    //                             onClick={(e) => e.stopPropagation()}>
-    //                             {/* Profile section */}
-    //                             <button onClick={group}>New Group</button>
-    //                         </div>
-    //                     )}
-    //                 </div>
-    //             </div>
-    //         )}
-    //     </div>
-    // );
 };
 
 export default ChatLayout;
+
+//    return (
+//         <div style={{ fontFamily: "'DM Sans', sans-serif", background: '#f0f1f8' }}>
+//             {loading ? (
+//                 <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#f0f1f8] z-[100]">
+//                     <div className="w-[52px] h-[52px] border-[3px] border-[#3D4DB7]/20 border-t-[#3D4DB7] rounded-full animate-spin" />
+//                     <p className="mt-[18px] text-[#3D4DB7]/50 text-[13px] tracking-[0.12em] uppercase font-medium">Loading</p>
+//                 </div>
+//             ) : (
+//                 <div className={`flex flex-col h-screen overflow-hidden relative z-10 ${dragStyle}`}>
+//                     <div className="flex-1 relative">
+
+//                         {/* ===================== DESKTOP ===================== */}
+//                         <div className="hidden lg:flex h-full">
+
+//                             {/* Left Icons Column — WhatsApp style full height */}
+//                             <div className="flex flex-col items-center h-full w-[68px] bg-white border-r border-[#d6d8ef] z-20 py-4 flex-shrink-0">
+
+//                                 {/* Logo — একদম উপরে */}
+//                                 <img
+//                                     src="/LB.png"
+//                                     alt=""
+//                                     className="w-[2.2rem] h-[2.2rem] object-contain mb-6"
+//                                 />
+//                                 {/* Icons — মাঝে flex-1 দিয়ে push */}
+//                                 <div className="flex flex-col items-center gap-[0.5rem] flex-1">
+//                                     {/* message */}
+//                                     <button
+//                                         className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+//                                         style={{
+//                                             color: state === "message" ? '#3D4DB7' : '#9090a8',
+//                                             background: state === "message" ? 'rgba(61,77,183,0.08)' : 'transparent',
+//                                         }}
+//                                         onClick={() => chat()}>
+//                                         {state === "message" ? (
+//                                             <AiFillMessage size={24} />
+//                                         ) : (
+//                                             <AiOutlineMessage size={24} onClick={() => stateChange("message")} />
+//                                         )}
+//                                     </button>
+//                                     {/* Group message */}
+//                                     <button
+//                                         className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+//                                         style={{
+//                                             color: state === "groupMessage" ? '#3D4DB7' : '#9090a8',
+//                                             background: state === "groupMessage" ? 'rgba(61,77,183,0.08)' : 'transparent',
+//                                         }}
+//                                         onClick={() => group()}>
+//                                         {state === "groupMessage" ? (
+//                                             <MdGroup size={24} />
+//                                         ) : (
+//                                             <MdOutlineGroup size={24} onClick={() => stateChange("groupMessage")} />
+//                                         )}
+//                                     </button>
+//                                     {/* status */}
+//                                     <button
+//                                         className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+//                                         style={{
+//                                             color: state === "status" ? '#3D4DB7' : '#9090a8',
+//                                             background: state === "status" ? 'rgba(61,77,183,0.08)' : 'transparent',
+//                                         }}
+//                                         onClick={statusUpload}>
+//                                         {state === "status" ? (
+//                                             <FaCirclePlay size={24} />
+//                                         ) : (
+//                                             <FaRegCirclePlay size={24} onClick={() => stateChange("status")} />
+//                                         )}
+//                                     </button>
+//                                     {/* notification */}
+//                                     <button
+//                                         className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
+//                                         style={{
+//                                             color: state === "notification" ? '#3D4DB7' : '#9090a8',
+//                                             background: state === "notification" ? 'rgba(61,77,183,0.08)' : 'transparent',
+//                                         }}>
+//                                         {state === "notification" ? (
+//                                             <AiFillNotification size={24} />
+//                                         ) : (
+//                                             <AiOutlineNotification size={24} onClick={() => stateChange("notification")} />
+//                                         )}
+//                                     </button>
+//                                 </div>
+//                                 {/* Avatar — একদম নিচে */}
+//                                 <div
+//                                     className="w-[38px] h-[38px] rounded-full border-2 cursor-pointer flex-shrink-0 overflow-hidden"
+//                                     style={{ borderColor: '#d6d8ef' }}
+//                                     onClick={(e) => openContextMenu(e)}>
+//                                     <img src={avatar} alt="" className="w-full h-full rounded-full object-cover" />
+//                                 </div>
+//                             </div>
+
+//                             {/* Left sidebar panel */}
+//                             <div
+//                                 style={{ width: `${searchbarWidth - 3.5}%` }}
+//                                 className="h-full z-10 bg-white border-r border-[#d6d8ef]">
+//                                 {stateClick === "message" && (
+//                                     <div className="ml-[1rem] h-full flex flex-col">
+//                                         <div className="flex justify-end mt-[1.7rem]">
+//                                             <button
+//                                                 className="p-2 rounded-xl text-[#9090a8] hover:text-[#3D4DB7] hover:bg-[#eef0fb] transition-colors mr-[0.5rem]"
+//                                                 onClick={(e) => openContextGroup(e)}>
+//                                                 <MdMoreVert size={27} />
+//                                             </button>
+//                                         </div>
+//                                         <ChatSidebar />
+//                                     </div>
+//                                 )}
+//                                 {stateClick === "status" && <div></div>}
+//                                 {stateClick === "groupSearch" && <div><GroupSearch /></div>}
+//                                 {stateClick === "Notification" && <div><Notification /></div>}
+//                             </div>
+
+//                             {/* Drag bar */}
+//                             <div
+//                                 className={`w-[1px] bg-[#d6d8ef] hover:w-[3px] hover:bg-[#3D4DB7]/40 cursor-ew-resize transition-all h-full z-20 ${barStyle}`}
+//                                 onMouseDown={handleMouseDown}
+//                             />
+
+//                             {/* Right side Outlet */}
+//                             <div className="flex-1 h-full z-10 bg-[#f0f1f8]">
+//                                 <Outlet />
+//                             </div>
+//                         </div>
+
+//                         {/* ===================== MOBILE ===================== */}
+//                         <div className="lg:hidden flex flex-col h-full z-10">
+//                             <div className="flex-1 overflow-auto">
+//                                 <Outlet />
+//                             </div>
+
+//                             <div
+//                                 className={`${list ? "hidden" : "flex"} h-[4rem] justify-between items-center gap-6 px-[1.4rem] border-t`}
+//                                 style={{ backgroundColor: '#ffffff', borderColor: '#d6d8ef' }}>
+//                                 {/* mobile buttons */}
+//                             </div>
+//                         </div>
+
+//                         {/* ===================== CONTEXT MENU ===================== */}
+//                         {contextMenu.show && (
+//                             <div
+//                                 ref={contextRef}
+//                                 className="absolute rounded-2xl w-72 p-5 z-50 border transition-all duration-300 ease-out"
+//                                 style={{
+//                                     top: contextMenu.y,
+//                                     left: contextMenu.x,
+//                                     backgroundColor: '#ffffff',
+//                                     borderColor: '#d6d8ef',
+//                                     boxShadow: '0 20px 40px rgba(61,77,183,0.10)',
+//                                     color: '#1a1a2e',
+//                                     opacity: menuAnimation ? 1 : 0,
+//                                     transform: menuAnimation ? 'translateX(24px)' : 'translateX(0)'
+//                                 }}
+//                                 onClick={(e) => e.stopPropagation()}>
+
+//                                 <div className="flex flex-col items-start relative w-full">
+//                                     <div className="relative">
+//                                         {cameraLoading ? (
+//                                             <div className="w-24 h-24 rounded-full border-4 border-[#d6d8ef] shadow-md flex justify-center items-center bg-[#eef0fb]">
+//                                                 <div className="w-10 h-10 border-[3px] border-[#3D4DB7]/20 border-t-[#3D4DB7] rounded-full animate-spin"></div>
+//                                             </div>
+//                                         ) : (
+//                                             <div className="relative w-24 h-24">
+//                                                 {isZoomed ? (
+//                                                     <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-80 z-50">
+//                                                         <TransformWrapper
+//                                                             initialScale={1}
+//                                                             wheel={{ step: 0.1 }}
+//                                                             pinch={{ step: 5 }}
+//                                                             doubleClick={{ disabled: true }}>
+//                                                             <TransformComponent>
+//                                                                 <img
+//                                                                     src={avatar}
+//                                                                     className="max-w-full max-h-full"
+//                                                                     onClick={() => setIsZoomed(false)}
+//                                                                 />
+//                                                             </TransformComponent>
+//                                                         </TransformWrapper>
+//                                                     </div>
+//                                                 ) : (
+//                                                     <img
+//                                                         src={avatar}
+//                                                         alt="Profile"
+//                                                         onClick={() => setIsZoomed(true)}
+//                                                         className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-md cursor-pointer"
+//                                                     />
+//                                                 )}
+//                                                 <label className="absolute -bottom-1 -right-1 bg-white border border-[#d6d8ef] p-1.5 rounded-full shadow cursor-pointer">
+//                                                     <FaCamera className="text-[#3D4DB7] text-xs" />
+//                                                     <input
+//                                                         type="file"
+//                                                         className="hidden"
+//                                                         onChange={handleProfilePicChange}
+//                                                     />
+//                                                 </label>
+//                                             </div>
+//                                         )}
+//                                         <p className="mt-3 font-semibold text-sm text-[#1a1a2e]">{userName}</p>
+//                                     </div>
+
+//                                     <div className="w-full mt-3 relative">
+//                                         {isEditing ? (
+//                                             <>
+//                                                 <textarea
+//                                                     value={editedAbout}
+//                                                     onChange={(e) => setEditedAbout(e.target.value)}
+//                                                     className="w-full p-2 border border-[#3D4DB7]/30 focus:border-[#3D4DB7] rounded-xl text-sm resize-none bg-[#f4f5fb] text-[#1a1a2e] outline-none transition-all"
+//                                                     rows={2}
+//                                                 />
+
+//                                                 <button
+//                                                     onClick={async () => {
+//                                                         await handleProfileAboutChange(editedAbout);
+//                                                         setIsEditing(false);
+//                                                     }}
+//                                                     className="mt-2 bg-[#3D4DB7] hover:bg-[#3041a3] text-white px-4 py-1.5 text-sm rounded-xl transition-colors"
+//                                                 >
+//                                                     Save
+//                                                 </button>
+//                                             </>
+//                                         ) : (
+//                                             <div className="flex justify-between items-center w-full">
+//                                                 <p className="text-sm text-[#1a1a2e]">
+//                                                     {about || "No about info"}
+//                                                 </p>
+
+//                                                 <FaPen
+//                                                     className="text-[#3D4DB7] text-xs cursor-pointer ml-2 flex-shrink-0"
+//                                                     onClick={() => {
+//                                                         setEditedAbout(about); // এখানেই about set হবে
+//                                                         setIsEditing(true);
+//                                                     }}
+//                                                 />
+//                                             </div>
+//                                         )}
+//                                     </div>
+
+//                                     <p className="text-sm text-[#9090a8] mt-2">{email}</p>
+//                                 </div>
+
+//                                 <button
+//                                     onClick={handleLogout}
+//                                     className="mt-6 w-full text-center bg-red-50 hover:bg-red-100 border border-red-200 text-red-500 py-2 rounded-xl transition-colors font-medium tracking-wide">
+//                                     Log out
+//                                 </button>
+//                             </div>
+//                         )}
+//                     </div>
+//                 </div>
+//             )}
+//         </div>
+//     );

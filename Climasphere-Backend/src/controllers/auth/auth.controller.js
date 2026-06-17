@@ -54,6 +54,8 @@ const registerUser = asyncHandler(async (req, res) => {
 
   const avatar = await uploadOnCloudinary(avatarLocalPath);
 
+  console.log("Avatar", avatar);
+
   const googleId = uuidv4();
 
   const user = await User.create({

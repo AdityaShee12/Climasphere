@@ -1,8 +1,6 @@
-import axios from "axios";
-import { BACKEND_API } from "../Backend_API.js";
 import { useSelector } from "react-redux";
 import { useState, useEffect } from "react";
-import { insightAPI } from "../api/api.js";
+import { insightAPI, downloadData } from "../api/api.js";
 
 const DataAnalystPortal = () => {
 
@@ -12,10 +10,7 @@ const DataAnalystPortal = () => {
 
     /* ---------------- CSV DOWNLOAD ---------------- */
     const downloadCSV = async () => {
-        const res = await axios.get(`${BACKEND_API}/api/download-csv`, {
-            responseType: "blob",
-            withCredentials: true,
-        });
+        const res = await downloadData.downloadCSV();
 
         const blob = new Blob([res.data], {
             type: "text/csv;charset=utf-8;",

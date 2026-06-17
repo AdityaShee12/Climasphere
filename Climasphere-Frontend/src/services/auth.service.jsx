@@ -12,13 +12,14 @@ export const registerUser = async (formData, dispatch) => {
 // Login a user
 export const loginUser = async (credentials, dispatch) => {
   const { data } = await authAPI.login(credentials);
+  console.log("Testing", data.loggedInUser);
+  
   dispatch(setUser(data?.loggedInUser));
   return data;
 };
 
 // Logout the user
-export const logoutUser = async (dispatch) => {console.log("swork");
-
+export const logoutUser = async (dispatch) => {
   const { data } = await authAPI.logout();
   dispatch(clearUser());
   return data;

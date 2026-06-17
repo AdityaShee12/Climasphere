@@ -6,7 +6,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 const ButtomNavbar = () => {
     const [dilogueBox, setDilogueBox] = useState(false);
     const [errorMessage, setErrorMessage] = useState("");
-    const { userName } = useSelector((state) => state.user);
+    const { userName } = useSelector((state) => state.user.user);
     const navigate = useNavigate();
     const location = useLocation();
 
@@ -20,17 +20,19 @@ const ButtomNavbar = () => {
     };
 
     const postFunc = () => {
-        if (userName) {
-            navigate("/post");
-        } else {
-            setErrorMessage("If you want to post photos and videos about climate, you have to login first");
-            setDilogueBox(true);
-        }
+        setErrorMessage("The creating post, writing blog system will be available soon");
+        setDilogueBox(true);
+        // if (userName) {
+        //     navigate("/post");
+        // } else {
+        //     setErrorMessage("If you want to post photos and videos about climate, you have to login first");
+        //     setDilogueBox(true);
+        // }
     };
 
     const messageFunc = () => {
         if (userName) {
-            navigate("/chat");
+            navigate("/chatLayout");
         } else {
             setErrorMessage("If you want to chat with others about climate then you have to login first");
             setDilogueBox(true);

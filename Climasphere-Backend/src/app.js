@@ -5,6 +5,9 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/auth.route.js"
 import weatherRouter from "./routes/weatherData.routes.js"
 import insightRouter from "./routes/insight.routes.js";
+import userRouter from "./routes/user.routes.js";
+import downloadDataRouter from "./routes/downloadCSV.routes.js"
+import chatRouter from "./routes/chat.routes.js"
 import { FRONTEND_API } from "./Frontend_API.js";
 
 const app = express();
@@ -54,6 +57,9 @@ app.get("/", (req, res) => {
 app.use("/auth", authRoutes);
 app.use("/weather", weatherRouter);
 app.use("/insight", insightRouter);
+app.use("/download", downloadDataRouter);
+app.use("/users", userRouter);
+app.use("/chat", chatRouter);
 
 if (process.env.NODE_ENV === "production") {
   app.use(express.static(path.join(__dirname, "client/build")));

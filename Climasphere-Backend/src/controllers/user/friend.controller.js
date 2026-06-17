@@ -1,6 +1,6 @@
 import { asyncHandler } from "../../utils/handlers/asyncHandler.js";
 import { User } from "../../models/user/user.model.js"
-import { Message } from "../../models/chat/message.model.js";
+import { Message } from "../../models/chat/Message.models.js";
 import { ApiResponse } from "../../utils/response/ApiResponse.js";
 
 const friends = asyncHandler(async (req, res) => {

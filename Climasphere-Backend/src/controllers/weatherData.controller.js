@@ -48,111 +48,111 @@ const weatherData = async (req, res) => {
             );
 
         // Daily Weather Entry
-        const dailyWeatherData = {
-            weatherTimestamp: new Date(
-                weatherRes.data.dt * 1000
-            ),
+        // const dailyWeatherData = {
+        //     weatherTimestamp: new Date(
+        //         weatherRes.data.dt * 1000
+        //     ),
 
-            weather: weatherRes.data.weather,
+        //     weather: weatherRes.data.weather,
 
-            mainWeather: {
-                temp: weatherRes.data.main.temp,
-                feels_like: weatherRes.data.main.feels_like,
-                temp_min: weatherRes.data.main.temp_min,
-                temp_max: weatherRes.data.main.temp_max,
-                pressure: weatherRes.data.main.pressure,
-                humidity: weatherRes.data.main.humidity,
-                sea_level: weatherRes.data.main.sea_level,
-                grnd_level: weatherRes.data.main.grnd_level,
-            },
+        //     mainWeather: {
+        //         temp: weatherRes.data.main.temp,
+        //         feels_like: weatherRes.data.main.feels_like,
+        //         temp_min: weatherRes.data.main.temp_min,
+        //         temp_max: weatherRes.data.main.temp_max,
+        //         pressure: weatherRes.data.main.pressure,
+        //         humidity: weatherRes.data.main.humidity,
+        //         sea_level: weatherRes.data.main.sea_level,
+        //         grnd_level: weatherRes.data.main.grnd_level,
+        //     },
 
-            visibility: weatherRes.data.visibility,
+        //     visibility: weatherRes.data.visibility,
 
-            wind: {
-                speed: weatherRes.data.wind.speed,
-                deg: weatherRes.data.wind.deg,
-                gust: weatherRes.data.wind.gust || 0,
-            },
+        //     wind: {
+        //         speed: weatherRes.data.wind.speed,
+        //         deg: weatherRes.data.wind.deg,
+        //         gust: weatherRes.data.wind.gust || 0,
+        //     },
 
-            clouds: {
-                all: weatherRes.data.clouds.all,
-            },
+        //     clouds: {
+        //         all: weatherRes.data.clouds.all,
+        //     },
 
-            pollution: {
-                aqi: airQuality.aqi,
-                label: airQuality.label,
-                components: pollutionComponents,
-                dt: pollutionRes.data.list?.[0]?.dt,
-            },
-        };
+        //     pollution: {
+        //         aqi: airQuality.aqi,
+        //         label: airQuality.label,
+        //         components: pollutionComponents,
+        //         dt: pollutionRes.data.list?.[0]?.dt,
+        //     },
+        // };
 
-        // Create city document if not exists
-        // otherwise push new weather history
-        const savedWeather =
-            await Weather.findOneAndUpdate(
-                {
-                    "location.city.id":
-                        weatherRes.data.id,
-                },
-                {
-                    $setOnInsert: {
-                        location: {
-                            country: {
-                                code:
-                                    weatherRes.data.sys.country,
-                                name:
-                                    geo.country ||
-                                    weatherRes.data.sys.country,
-                            },
+        // // Create city document if not exists
+        // // otherwise push new weather history
+        // const savedWeather =
+        //     await Weather.findOneAndUpdate(
+        //         {
+        //             "location.city.id":
+        //                 weatherRes.data.id,
+        //         },
+        //         {
+        //             $setOnInsert: {
+        //                 location: {
+        //                     country: {
+        //                         code:
+        //                             weatherRes.data.sys.country,
+        //                         name:
+        //                             geo.country ||
+        //                             weatherRes.data.sys.country,
+        //                     },
 
-                            state: {
-                                name:
-                                    geo.state || "Unknown",
-                                code:
-                                    geo.state_code || "",
-                            },
+        //                     state: {
+        //                         name:
+        //                             geo.state || "Unknown",
+        //                         code:
+        //                             geo.state_code || "",
+        //                     },
 
-                            city: {
-                                id: weatherRes.data.id,
-                                name:
-                                    weatherRes.data.name,
-                            },
-                        },
+        //                     city: {
+        //                         id: weatherRes.data.id,
+        //                         name:
+        //                             weatherRes.data.name,
+        //                     },
+        //                 },
 
-                        coord: {
-                            lat:
-                                weatherRes.data.coord.lat,
-                            lon:
-                                weatherRes.data.coord.lon,
-                        },
+        //                 coord: {
+        //                     lat:
+        //                         weatherRes.data.coord.lat,
+        //                     lon:
+        //                         weatherRes.data.coord.lon,
+        //                 },
 
-                        sys: {
-                            country:
-                                weatherRes.data.sys.country,
-                            sunrise:
-                                weatherRes.data.sys.sunrise,
-                            sunset:
-                                weatherRes.data.sys.sunset,
-                        },
+        //                 sys: {
+        //                     country:
+        //                         weatherRes.data.sys.country,
+        //                     sunrise:
+        //                         weatherRes.data.sys.sunrise,
+        //                     sunset:
+        //                         weatherRes.data.sys.sunset,
+        //                 },
 
-                        timezone:
-                            weatherRes.data.timezone,
+        //                 timezone:
+        //                     weatherRes.data.timezone,
 
-                        source: "OpenWeather",
-                    },
+        //                 source: "OpenWeather",
+        //             },
 
-                    $push: {
-                        weatherHistory:
-                            dailyWeatherData,
-                    },
-                },
-                {
-                    upsert: true,
-                    new: true,
-                    runValidators: true,
-                }
-            );
-
+        //             $push: {
+        //                 weatherHistory:
+        //                     dailyWeatherData,
+        //             },
+        //         },
+        //         {
+        //             upsert: true,
+        //             new: true,
+        //             runValidators: true,
+        //         }
+        //     );
+const savedWeather = 12;
         return res.status(200).json({
             success: true,
 

@@ -33,7 +33,6 @@ const Homepage = () => {
   const { userName, fullName, avatar } = useSelector((state) => state?.user?.user);
   const navigate = useNavigate();
   const dispatch = useDispatch();                                // FIX: was missing entirely
-  console.log(userName, fullName, avatar);
 
   // ─── AQI Breakpoints ──────────────────────────────────────────────────────
 

@@ -9,18 +9,18 @@ import Sign_in from "../pages/auth/Sign_in.jsx";
 import Download from "../Download/download.jsx";
 import DataAnalystPortal from "../dataAnalystPortal/DataAnalystPortal.jsx";
 import HomeLayout from "../Layout/HomeLayout.jsx";
-
+import ChatLayout from "../Layout/ChatLayout.jsx";
+import ChatService from "../services/chat.service.jsx";
 
 const App = createBrowserRouter(
   createRoutesFromElements(
     <>
       <Route path="/" element={<HomeLayout />}>
         <Route index element={<Homepage />} />
-        {/* <Route path="post" element={<Post />} />
-        <Route path="chat" element={<ChatLayout />}>
-          <Route path=":userName" element={<ChatPage />} />
-          <Route path="group/:groupName" element={<GroupSearch />} />
-        </Route> */}
+        {/* <Route path="post" element={<Post />} /> */}
+      </Route>
+      <Route path="/chatLayout" element={<ChatLayout />}>
+        <Route path="chat/:userName" element={<ChatService />} />
       </Route>
       <Route path="/sign_up" element={<Sign_up />} />
       <Route path="/sign_in" element={<Sign_in />} />

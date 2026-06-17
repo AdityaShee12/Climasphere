@@ -1,41 +1,49 @@
 import axios from "axios";
-import { BACKEND_API } from "../Backend_API.js";
+import { authAPI } from "../api/api";
+import { debounce } from "lodash";
+import { setUser } from "../features/userSlice";
 
-// Register a new user
-export const registerUser = async (formData) => {
-  const response = await axios.post(`${BACKEND_API}/api/users/register`, formData);
-  return response.data;
+export const changeProfilePic = async (formData, dispatch) => {
+  const { data } = await authAPI.profilePicChange(formData);
+  dispatch(setUser(data));
+  return data;
 };
 
-// Login a user
-export const loginUser = async (credentials) => {
-  const response = await axios.post(`${BACKEND_API}/api/users/login`, credentials, {
-    withCredentials: true,
-  });
-  return response.data;
+export const changeProfileAbout = async (aboutData, dispatch) => {
+  const { data } = await authAPI.profileAboutChange(aboutData);
+  dispatch(setUser(data));
+  return data;
 };
 
-// Logout the user
-export const logoutUser = async () => {
-  const response = await axios.post(
-    `${BACKEND_API}/api/users/logout`,
-    {},
-    {
-      withCredentials: true,
+// It is fetch users those are matchs with search query
+export const fetchUsersService = debounce(async (searchText) => {
+  if (!searchText.trim()) {
+    setUser([]);
+    return;
+  }
+  try {
+    const response = await axios.get(
+      `${BACKEND_API}/api/v1/users/searchUser?query=${searchText}&userId=${userId}`, {
+      withCredentials: true
     }
-  );
-  console.log("res", response);
-  return response.data;
-};
+    );
+    console.log("Res", response);
+    const usersWithUUID = response.data.map((user) => ({
+      ...user,
+    }));
+    console.log("Data", usersWithUUID);
+    setUser(usersWithUUID);
+  } catch (error) {
+    console.error("Error fetching users:", error);
+  }
+}, 300);
 
-// Refresh the access token
-export const refreshAccessToken = async () => {
-  const response = await axios.post(
-    `${BACKEND_API}/api/users/refresh-token`,
-    {},
-    {
-      withCredentials: true,
-    }
-  );
-  return response.data;
+// Search for a user by username
+export const searchUserByUsername = async (username) => {
+  try {
+    const response = await axios.get(`/search-user?username=${username}`);
+    return response.data;
+  } catch (error) {
+    throw new Error("User not found");
+  }
 };
