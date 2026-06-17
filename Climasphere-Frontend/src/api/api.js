@@ -4,7 +4,7 @@ import { store } from "../app/store";
 
 // BASE CONFIG
 const API_URL =
-    import.meta.env.VITE_API_URL;
+   "https://climasphere-vk5q.onrender.com";
 
 const api = axios.create({
     baseURL: API_URL,
