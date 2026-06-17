@@ -9,7 +9,7 @@ import userRouter from "./routes/user.routes.js";
 import downloadDataRouter from "./routes/downloadCSV.routes.js"
 import chatRouter from "./routes/chat.routes.js"
 import { FRONTEND_API } from "./Frontend_API.js";
-
+import path from "path";
 const app = express();
 
 app.use(
