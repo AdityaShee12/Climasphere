@@ -160,6 +160,8 @@ const Homepage = () => {
 
       const res = await weatherAPI.weatherData(cityName);
 
+      console.log("Res", res);
+      
       setData(res.data.weather);
 
       const weatherData = res.data.weather;

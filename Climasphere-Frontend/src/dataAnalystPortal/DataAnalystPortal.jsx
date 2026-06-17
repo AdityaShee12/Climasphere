@@ -5,8 +5,9 @@ import { insightAPI, downloadData } from "../api/api.js";
 const DataAnalystPortal = () => {
 
     const { userName, fullName, avatar, userProffesion } = useSelector(
-        (state) => state.user
+        (state) => state.user.user
     );
+    console.log("DataAD", userName, fullName, avatar, userProffesion);
 
     /* ---------------- CSV DOWNLOAD ---------------- */
     const downloadCSV = async () => {

@@ -152,7 +152,7 @@ const weatherData = async (req, res) => {
         //             runValidators: true,
         //         }
         //     );
-const savedWeather = 12;
+        const savedWeather = 12;
         return res.status(200).json({
             success: true,
 
@@ -164,6 +164,10 @@ const savedWeather = 12;
                 temperature:
                     weatherRes.data.main.temp,
 
+                temp_max: weatherRes.data.main.temp_max,
+
+                temp_min: weatherRes.data.main.temp_min,
+                
                 feels_like:
                     weatherRes.data.main.feels_like,
 
