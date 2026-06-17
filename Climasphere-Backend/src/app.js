@@ -9,8 +9,7 @@ import userRouter from "./routes/user.routes.js";
 import downloadDataRouter from "./routes/downloadCSV.routes.js"
 import chatRouter from "./routes/chat.routes.js"
 import { FRONTEND_API } from "./Frontend_API.js";
-import path from "path";
-import { fileURLToPath } from "url";
+
 
 const app = express();
 
@@ -63,13 +62,13 @@ app.use("/download", downloadDataRouter);
 app.use("/users", userRouter);
 app.use("/chat", chatRouter);
 
-if (process.env.NODE_ENV === "production") {
-  app.use(express.static(path.join(__dirname, "client/build")));
+// if (process.env.NODE_ENV === "production") {
+//   app.use(express.static(path.join(__dirname, "client/build")));
 
-  app.get("*", (req, res) => {
-    res.sendFile(path.join(__dirname, "client/build", "index.html"));
-  });
-}
+//   app.get("*", (req, res) => {
+//     res.sendFile(path.join(__dirname, "client/build", "index.html"));
+//   });
+// }
 
 // 404 Handler
 app.use((req, res) => {
