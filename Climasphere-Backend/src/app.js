@@ -10,6 +10,8 @@ import downloadDataRouter from "./routes/downloadCSV.routes.js"
 import chatRouter from "./routes/chat.routes.js"
 import { FRONTEND_API } from "./Frontend_API.js";
 import path from "path";
+import { fileURLToPath } from "url";
+
 const app = express();
 
 app.use(
