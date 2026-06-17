@@ -1,2 +1,1 @@
-const FRONTEND_API = "http://localhost:5173"
-export { FRONTEND_API };
+export const API = process.env.FRONTEND_API;
