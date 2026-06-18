@@ -7,6 +7,13 @@ const transporter = nodemailer.createTransport({
     pass: "ncgi dgnx uike bjhm",
   },
 });
-console.log("Works");
+
+transporter.verify((error, success) => {
+  if (error) {
+    console.log("SMTP Error:", error);
+  } else {
+    console.log("SMTP Server is ready");
+  }
+});
 
 export { transporter };
