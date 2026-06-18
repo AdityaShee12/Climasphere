@@ -3,11 +3,11 @@ import toast from "react-hot-toast";
 import { store } from "../app/store";
 
 // BASE CONFIG
-const API_URL =
-     "https://climasphere-vk5q.onrender.com";
-
 // const API_URL =
-//      "http://localhost:8000";
+//      "https://climasphere-vk5q.onrender.com";
+
+const API_URL =
+     "http://localhost:8000";
 const api = axios.create({
     baseURL: API_URL,
     withCredentials: true,
