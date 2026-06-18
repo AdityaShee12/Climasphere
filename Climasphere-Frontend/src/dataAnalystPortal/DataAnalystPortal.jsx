@@ -124,9 +124,7 @@ const DataAnalystPortal = () => {
                         <div className="grid grid-cols-2 gap-3">
                             {[
                                 { label: "Insights", value: savedInsights.length },
-                                { label: "Cities", value: 8 },
-                                { label: "Reports", value: 340 },
-                                { label: "Rating", value: "4.9" },
+                                { label: "Cities", value: 20 }
                             ].map(({ label, value }) => (
                                 <div
                                     key={label}
