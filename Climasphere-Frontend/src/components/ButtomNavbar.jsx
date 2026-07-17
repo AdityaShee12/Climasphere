@@ -20,14 +20,12 @@ const ButtomNavbar = () => {
     };
 
     const postFunc = () => {
-        setErrorMessage("The creating post, writing blog system will be available soon");
-        setDilogueBox(true);
-        // if (userName) {
-        //     navigate("/post");
-        // } else {
-        //     setErrorMessage("If you want to post photos and videos about climate, you have to login first");
-        //     setDilogueBox(true);
-        // }
+        if (userName) {
+            navigate("/postLayout");
+        } else {
+            setErrorMessage("If you want to post photos and videos about climate, you have to login first");
+            setDilogueBox(true);
+        }
     };
 
     const messageFunc = () => {
@@ -42,7 +40,6 @@ const ButtomNavbar = () => {
     return (
         <div>
             <nav className="fixed bottom-0 left-0 w-full bg-slate-950/90 backdrop-blur-xl border-t border-slate-800 flex justify-around items-center h-16 z-50">
-
                 <button
                     className="p-3 rounded-xl transition-colors hover:text-orange-400 hover:bg-orange-500/10"
                     onClick={() => navigate("/")}>
@@ -72,7 +69,6 @@ const ButtomNavbar = () => {
                         <HiChatBubbleLeft className="text-2xl text-slate-400" />
                     )}
                 </button>
-
             </nav>
 
             {dilogueBox && (

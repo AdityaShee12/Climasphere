@@ -17,6 +17,7 @@
     "axios": "^1.12.2",
     "crypto-js": "^4.2.0",
     "lodash": "^4.17.23",
+    "lucide-react": "^1.24.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-hot-toast": "^2.6.0",

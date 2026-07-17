@@ -1,70 +1,51 @@
 import { Router } from "express";
-import { verifyJWT } from "../middlewire/auth.middlewire.js";
-import { upload } from "../middlewire/multer.middlewire.js";
-
-import {
-  createpost,
-  updatePost,
-  deletePost,
-  getPostsFeed,
-  getSinglePost,
-  togglePostLike,
-  togglePostDislike,
-  addPostViews,
-  getOwnAllPosts,
-  getClickedUserPosts,
-} from "../controller/createpost.controller.js";
+import { upload } from "../middlewares/upload/multer.middleware.js";
+import { createPost, getPost, addView } from "../controllers/post/post.controller.js";
 
 const router = Router();
 
-/**
- * Post Routes
- */
-
-// ✅ Create a new post (image optional)
-router.route("/").post(
+router.route("/createPost").post(
     upload.fields([
         {
-            name: "postFile",
-            maxCount: 1
+            name: "imagePreview",
+            maxCount: 1,
         },
-       
     ]),
-    verifyJWT,
-    createpost
+    createPost
 );
 
+router.post("/getPost", getPost);
 
-// ✅ Get posts feed (search, pagination)
-router.get("/feed",verifyJWT,getPostsFeed);
+// router.post("/addView", addView);
 
+// router.post("/like", likePost);
 
-router.route("/my-posts").get(verifyJWT,getOwnAllPosts)
+// router.post("/unlike", unlikePost);
 
+// router.post("/comment", commentPost);
 
-router.route("/my-posts/:postId").get(verifyJWT,getSinglePost)
+// router.route("/my-posts").get(verifyJWT, getOwnAllPosts)
 
-router.get("/user/:userId", verifyJWT, getClickedUserPosts);
+// router.route("/my-posts/:postId").get(verifyJWT, getSinglePost)
 
-// ✅ Get single post by ID
-router.get("/:postId", getSinglePost);
+// router.get("/user/:userId", verifyJWT, getClickedUserPosts);
 
-// ✅ Update post (only owner, image optional)
-router.patch("/:postId", verifyJWT,  updatePost);
+// // ✅ Get single post by ID
+// router.get("/:postId", getSinglePost);
 
-// ✅ Delete post (only owner)
-router.delete("/:postId", verifyJWT, deletePost);
+// // ✅ Update post (only owner, image optional)
+// router.patch("/:postId", verifyJWT, updatePost);
 
-// ✅ Like toggle on a post
-router.route("/:postId/like").post(verifyJWT,togglePostLike)
+// // ✅ Delete post (only owner)
+// router.delete("/:postId", verifyJWT, deletePost);
 
-// ✅ Dislike toggle on a post
-router.post("/:postId/dislike", verifyJWT, togglePostDislike);
+// // ✅ Like toggle on a post
+// router.route("/:postId/like").post(verifyJWT, togglePostLike)
 
-// ✅ Add view to post
-router.post("/:postId/view", addPostViews);
+// // ✅ Dislike toggle on a post
+// router.post("/:postId/dislike", verifyJWT, togglePostDislike);
 
-
-
+// // ✅ Add view to post
+// router.post("/:postId/view", addPostViews);
 
 export default router;

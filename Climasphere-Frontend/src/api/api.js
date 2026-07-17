@@ -3,15 +3,15 @@ import toast from "react-hot-toast";
 import { store } from "../app/store";
 
 // BASE CONFIG
-const API_URL =
-     "https://climasphere-vk5q.onrender.com";
-
 // const API_URL =
-//      "http://localhost:8000";
+//      "https://climasphere-vk5q.onrender.com";
+
+const API_URL =
+    "http://localhost:8000";
 const api = axios.create({
     baseURL: API_URL,
     withCredentials: true,
-    timeout: 15000,
+    // timeout: 15000,
 });
 
 // REQUEST INTERCEPTOR
@@ -168,6 +168,7 @@ const apiRequest = async (
 
 // WEATHER API
 export const weatherAPI = {
+
     detectLocation: async (latitude, longitude) => {
         return apiRequest(() =>
             api.get(`weather/reverse-geocode?lat=${latitude}&lon=${longitude}`)
@@ -267,6 +268,25 @@ export const authAPI = {
         ),
 };
 
+// Post API
+export const postAPI = {
+
+    createPost: async (data) =>
+        apiRequest(() =>
+            api.post(
+                "post/createPost",
+                data
+            )
+        ),
+
+    getPost: async () =>
+        apiRequest(() =>
+            api.post(
+                "post/getPost", {}
+            )
+        ),
+}
+
 // CHAT API
 export const chatAPI = {
 
@@ -307,10 +327,12 @@ export const insightAPI = {
 }
 
 export const downloadData = {
+
     downloadCSV: async () => {
         return apiRequest(() =>
             api.get("/download/downloadCSV")
         );
     },
 }
+
 export default api;
