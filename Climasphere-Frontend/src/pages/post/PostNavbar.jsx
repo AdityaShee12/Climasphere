@@ -11,7 +11,6 @@ import { useSelector } from "react-redux";
 
 const Navbar = () => {
 
-    const CURRENT_USER = { name: "Aditya Rao", initials: "AR" };
     const navigate = useNavigate();
     const { user } = useSelector(
         (state) => state.user,
@@ -26,8 +25,14 @@ const Navbar = () => {
     }, [user]);
 
     const active = (key) => {
-        if (key === "create") {
+        if (key === "home") {
+            navigate("/postLayout");
+        }
+        else if (key === "create") {
             navigate("/postLayout/createPost");
+        }
+        else if (key === "create") {
+
         }
     }
 
@@ -74,7 +79,6 @@ const Navbar = () => {
                     {navItem("home", "Home", Home)}
                     {navItem("friends", "Friends", Users)}
                     {navItem("create", "Post", PlusSquare)}
-                    {navItem("alerts", "Alerts", Bell)}
                 </nav>
 
                 <img

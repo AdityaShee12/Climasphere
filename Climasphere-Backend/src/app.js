@@ -11,7 +11,6 @@ import postRouter from "./routes/post.routes.js"
 import chatRouter from "./routes/chat.routes.js"
 import { FRONTEND_API } from "./Frontend_API.js";
 
-
 const app = express();
 
 app.use(

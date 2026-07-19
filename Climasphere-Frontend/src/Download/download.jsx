@@ -83,9 +83,6 @@ const Download = () => {
             <div className="grid grid-cols-2 gap-3">
               {[
                 { label: "Insights", value: insights.length },
-                { label: "Cities", value: 8 },
-                { label: "Reports", value: 340 },
-                { label: "Rating", value: "4.9" },
               ].map(({ label, value }) => (
                 <div
                   key={label}

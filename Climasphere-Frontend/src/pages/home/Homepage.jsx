@@ -367,8 +367,22 @@ const Homepage = () => {
 
   return (
     <div>
+      <style>{`
+        html, body {
+          margin: 0;
+          padding: 0;
+          height: 100%;
+          overflow: hidden;
+        }
+        #root {
+          height: 100%;
+        }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+      `}</style>
+
       {loading ? (
-        <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950">
+        <div className="h-screen w-full flex flex-col items-center justify-center bg-slate-950">
           <style>{`
             @keyframes pulse-ring {
               0%   { transform: scale(0.8); opacity: 1; }
@@ -406,12 +420,15 @@ const Homepage = () => {
           </div>
         </div>
       ) : (
-        <div className="w-screen min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
+        <div className="no-scrollbar w-full h-screen bg-slate-950 text-slate-100 overflow-x-hidden overflow-y-auto">
           {data ? (
             <div className="max-w-lg xl:max-w-5xl mx-auto px-4 pb-28">
               {/* ── Top bar ── */}
               <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl py-3 flex items-center gap-2">
-                <span className="text-orange-400 font-extrabold text-[15px] md:text-lg tracking-tight shrink-0 select-none">
+                <span
+                  onClick={() => window.location.reload()}
+                  className="text-orange-400 font-extrabold text-[15px] md:text-lg tracking-tight shrink-0 select-none cursor-pointer active:opacity-70 transition-opacity"
+                >
                   ClimaSphere
                 </span>
 
@@ -507,13 +524,10 @@ const Homepage = () => {
 
               {/* Big Main Temperature area */}
               <div className="mt-6">
-
-                {/* Area name */}
                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 leading-none">
                   {data?.city}
                 </h1>
 
-                {/* Day Name and Time */}
                 <p className="text-slate-400 text-xs md:text-sm mt-1">
                   {time.toLocaleDateString("en-US", {
                     weekday: "long",
@@ -522,7 +536,6 @@ const Homepage = () => {
                   })}
                 </p>
 
-                {/* Temperature */}
                 <div className="flex items-start mt-4">
                   <span className="text-[8rem] md:text-[10rem] font-bold tracking-tighter leading-none text-slate-100">
                     {Math.round(data?.temperature)}
@@ -532,7 +545,6 @@ const Homepage = () => {
                   </span>
                 </div>
 
-                {/* Condition pill + AQI pill — same row */}
                 <div className="flex items-center gap-2 mt-3 flex-wrap">
                   <span className="bg-orange-500/15 text-orange-400 text-xs font-semibold px-4 py-1.5 rounded-full">
                     {weatherConditions}
@@ -543,7 +555,7 @@ const Homepage = () => {
                     AQI {AQI} · {AQIlabel}
                   </span>
                 </div>
-                {/* ── Forecast CTA button ── */}
+
                 <button
                   onClick={() =>
                     window.open(
@@ -560,26 +572,14 @@ const Homepage = () => {
 
               {/* CARDS SECTION */}
               <div className="mt-6 flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
-
-                {/* ── AQI detail card ── */}
                 <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">
                     Air Quality Index
                   </p>
                   <div className="flex items-center gap-5">
                     <div className="relative shrink-0 w-[90px] h-[90px]">
-                      <svg
-                        width="100%"
-                        height="100%"
-                        viewBox="0 0 90 90"
-                        className="-rotate-90"
-                      >
-                        <circle
-                          cx="45" cy="45" r={R}
-                          fill="none"
-                          stroke="#1e293b"
-                          strokeWidth="6"
-                        />
+                      <svg width="100%" height="100%" viewBox="0 0 90 90" className="-rotate-90">
+                        <circle cx="45" cy="45" r={R} fill="none" stroke="#1e293b" strokeWidth="6" />
                         <circle
                           cx="45" cy="45" r={R}
                           fill="none"
@@ -590,17 +590,13 @@ const Homepage = () => {
                         />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <span className="text-xl font-bold text-slate-100 leading-none">
-                          {AQI}
-                        </span>
+                        <span className="text-xl font-bold text-slate-100 leading-none">{AQI}</span>
                         <span className="text-[9px] text-slate-400 mt-0.5">AQI</span>
                       </div>
                     </div>
 
                     <div className="flex-1">
-                      <span
-                        className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-2 ${aqiBadgeClass}`}
-                      >
+                      <span className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-2 ${aqiBadgeClass}`}>
                         {AQIlabel}
                       </span>
                       <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
@@ -618,31 +614,14 @@ const Homepage = () => {
                   </div>
                 </div>
 
-                {/* Weather Details Data */}
                 <div className="grid grid-cols-2 gap-3">
                   {[
-                    {
-                      label: "Feels Like",
-                      value: `${Math.round(data?.feels_like)}°C`,
-                    },
-                    {
-                      label: "Humidity",
-                      value: `${data?.humidity}%`,
-                    },
-                    {
-                      label: "Wind",
-                      // FIX: optional chaining + nullish fallback to avoid NaN
-                      value: `${Math.round((data?.wind?.speed))} m/s`,
-                    },
-                    {
-                      label: "Pressure",
-                      value: `${data?.pressure} hPa`,
-                    },
+                    { label: "Feels Like", value: `${Math.round(data?.feels_like)}°C` },
+                    { label: "Humidity", value: `${data?.humidity}%` },
+                    { label: "Wind", value: `${Math.round((data?.wind?.speed))} m/s` },
+                    { label: "Pressure", value: `${data?.pressure} hPa` },
                   ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="bg-slate-800 border border-slate-700 rounded-2xl p-4"
-                    >
+                    <div key={label} className="bg-slate-800 border border-slate-700 rounded-2xl p-4">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
                         {label}
                       </p>
@@ -651,7 +630,6 @@ const Homepage = () => {
                   ))}
                 </div>
 
-                {/* Today's temperature range */}
                 <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 xl:col-span-2">
                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">
                     Today's Range
@@ -669,14 +647,8 @@ const Homepage = () => {
                         className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-blue-400 to-orange-400"
                         style={{
                           width: `${Math.min(
-                            ((data?.temperature -
-                              data?.temp_min) /
-                              Math.max(
-                                data?.temp_max -
-                                data?.temp_min,
-                                1
-                              )) *
-                            100,
+                            ((data?.temperature - data?.temp_min) /
+                              Math.max(data?.temp_max - data?.temp_min, 1)) * 100,
                             100
                           )}%`,
                         }}
@@ -694,35 +666,106 @@ const Homepage = () => {
             </div>
           ) : (
             /* ── Empty / search state ── */
-            <div className="min-h-screen flex flex-col items-center justify-center px-8 gap-6">
-              <div className="text-center">
-                <div className="w-[10rem] md:w-[15rem] mx-auto">
-                  <img src="/WeatherIcon.png" alt="" />
+            <div className="min-h-screen flex flex-col">
+              {/* Top bar — same centered container as data state, so logo & settings align consistently */}
+              <div className="max-w-lg xl:max-w-5xl mx-auto w-full px-4">
+                <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl py-3 flex items-center justify-between">
+                  <span
+                    onClick={() => window.location.reload()}
+                    className="text-orange-400 font-extrabold text-[15px] md:text-lg tracking-tight shrink-0 select-none cursor-pointer active:opacity-70 transition-opacity"
+                  >
+                    ClimaSphere
+                  </span>
+
+                  <div className="relative">
+                    <button
+                      onClick={openContextMenu}
+                      className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-100 hover:border-slate-500 transition-colors"
+                    >
+                      <MdSettings size={18} />
+                    </button>
+
+                    {contextMenu.show && (
+                      <div
+                        ref={contextRef}
+                        className={`absolute top-12 right-0 z-50 min-w-[11rem] bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-2xl transition-all duration-200 ${menuAnimation
+                          ? "opacity-100 translate-y-0"
+                          : "opacity-0 -translate-y-2"
+                          }`}
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        {avatar ? (
+                          <div className="flex items-center gap-2 px-3 py-2 mb-1">
+                            <img src={avatar} className="w-7 h-7 rounded-full object-cover" alt="avatar" />
+                            <span className="font-semibold text-sm text-slate-100">{fullName}</span>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => navigate("/sign_up")}
+                            className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+                          >
+                            Sign Up
+                          </button>
+                        )}
+                        <button
+                          onClick={() => navigate("/sign_in")}
+                          className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+                        >
+                          Sign In
+                        </button>
+                        <div className="h-px bg-slate-700 my-1" />
+                        <button
+                          onClick={downloadData}
+                          className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+                        >
+                          Download Data
+                        </button>
+                        <button
+                          onClick={showHistory}
+                          className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+                        >
+                          History
+                        </button>
+                        <div className="h-px bg-slate-700 my-1" />
+                        <button
+                          onClick={logout}
+                          className="w-full text-left text-sm text-red-400 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+                        >
+                          Log Out
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {/* <h2 className="text-2xl md:text-3xl font-bold text-slate-100">
-               
-                  ClimaSphere
-                </h2> */}
-                <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-orange-400 font-extrabold tracking-tight shrink-0 select-none">
-                  ClimaSphere
-                </span>
-                <p className="text-slate-400 text-sm mt-1">
-                  Real-time weather &amp; air quality
-                </p>
               </div>
-              <div className="w-full max-w-xs md:max-w-sm flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-full px-4 h-12 focus-within:border-slate-500 transition-colors">
-                <AiOutlineSearch className="text-slate-400 shrink-0" size={18} />
-                <input
-                  value={city}
-                  onChange={(e) => setCity(e.target.value)}
-                  onKeyDown={(e) =>
-                    e.key === "Enter" && city.trim() && fetchDataByCity(city)
-                  }
-                  placeholder="Enter city name"
-                  className="flex-1 bg-transparent outline-none text-slate-100 placeholder-slate-500"
-                />
+
+              {/* Centered hero content */}
+              <div className="flex-1 flex flex-col items-center justify-center px-8 gap-6">
+                <div className="text-center">
+                  <div className="w-[10rem] md:w-[15rem] mx-auto">
+                    <img src="/WeatherIcon.png" alt="" />
+                  </div>
+                  <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-orange-400 font-extrabold tracking-tight shrink-0 select-none">
+                    ClimaSphere
+                  </span>
+                  <p className="text-slate-400 text-sm mt-1">
+                    Real-time weather &amp; air quality
+                  </p>
+                </div>
+                <div className="w-full max-w-xs md:max-w-sm flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-full px-4 h-12 focus-within:border-slate-500 transition-colors">
+                  <AiOutlineSearch className="text-slate-400 shrink-0" size={18} />
+                  <input
+                    value={city}
+                    onChange={(e) => setCity(e.target.value)}
+                    onKeyDown={(e) =>
+                      e.key === "Enter" && city.trim() && fetchDataByCity(city)
+                    }
+                    placeholder="Enter city name"
+                    className="flex-1 bg-transparent outline-none text-slate-100 placeholder-slate-500"
+                  />
+                </div>
+                <p className="text-xs text-slate-500">Press Enter to search</p>
               </div>
-              <p className="text-xs text-slate-500">Press Enter to search</p>
             </div>
           )}
         </div>
@@ -747,11 +790,7 @@ const Homepage = () => {
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
             <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center modal-box">
               <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
-                <svg
-                  width="22" height="22" viewBox="0 0 24 24"
-                  fill="none" stroke="#f87171"
-                  strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-                >
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f87171" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <circle cx="12" cy="12" r="10" />
                   <line x1="12" y1="8" x2="12" y2="12" />
                   <line x1="12" y1="16" x2="12.01" y2="16" />
@@ -779,3 +818,415 @@ const Homepage = () => {
 };
 
 export default Homepage;
+
+//  return (
+//     <div>
+//       {loading ? (
+//         <div className="h-screen w-screen flex flex-col items-center justify-center bg-slate-950">
+//           <style>{`
+//             @keyframes pulse-ring {
+//               0%   { transform: scale(0.8); opacity: 1; }
+//               100% { transform: scale(2);   opacity: 0; }
+//             }
+//             @keyframes fade-up {
+//               0%   { opacity: 0; transform: translateY(8px); }
+//               100% { opacity: 1; transform: translateY(0); }
+//             }
+//             @keyframes dot-bounce {
+//               0%, 80%, 100% { opacity: 0.3; transform: scaleY(0.6); }
+//               40%           { opacity: 1;   transform: scaleY(1); }
+//             }
+//             .pulse-ring-1 { animation: pulse-ring 1.8s ease-out infinite; }
+//             .pulse-ring-2 { animation: pulse-ring 1.8s ease-out infinite; animation-delay: 0.6s; }
+//             .fade-up-text { animation: fade-up 0.6s ease forwards; }
+//             .dot-1 { animation: dot-bounce 1.2s ease-in-out infinite; }
+//             .dot-2 { animation: dot-bounce 1.2s ease-in-out infinite; animation-delay: 0.15s; }
+//             .dot-3 { animation: dot-bounce 1.2s ease-in-out infinite; animation-delay: 0.3s; }
+//           `}</style>
+
+//           <div className="relative w-14 h-14 flex items-center justify-center mb-7">
+//             <span className="pulse-ring-1 absolute w-14 h-14 rounded-full border-2 border-orange-500" />
+//             <span className="pulse-ring-2 absolute w-14 h-14 rounded-full border-2 border-orange-500" />
+//             <span className="absolute w-14 h-14 rounded-full border-[3px] border-slate-800 border-t-orange-500 border-r-orange-500 animate-[spin_0.9s_cubic-bezier(0.4,0,0.2,1)_infinite]" />
+//             <span className="absolute w-9 h-9 rounded-full border-2 border-slate-800 border-b-orange-400 animate-[spin_0.7s_cubic-bezier(0.4,0,0.2,1)_infinite_reverse]" />
+//           </div>
+//           <p className="fade-up-text text-slate-200 text-sm font-medium tracking-wide mb-2">
+//             Loading
+//           </p>
+//           <div className="flex items-center gap-1">
+//             <span className="dot-1 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+//             <span className="dot-2 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+//             <span className="dot-3 w-1.5 h-3.5 bg-slate-600 rounded-full" />
+//           </div>
+//         </div>
+//       ) : (
+//         <div className="w-screen min-h-screen bg-slate-950 text-slate-100 overflow-x-hidden">
+//           {data ? (
+//             <div className="max-w-lg xl:max-w-5xl mx-auto px-4 pb-28">
+//               {/* ── Top bar ── */}
+//               <div className="sticky top-0 z-40 bg-slate-950/90 backdrop-blur-xl py-3 flex items-center gap-2">
+//                 <span className="text-orange-400 font-extrabold text-[15px] md:text-lg tracking-tight shrink-0 select-none">
+//                   ClimaSphere
+//                 </span>
+
+//                 <div className="flex-1 flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-full px-4 h-11 focus-within:border-slate-500 transition-colors">
+//                   <button
+//                     onClick={() => city.trim() && fetchDataByCity(city)}
+//                     className="text-slate-400 flex items-center shrink-0"
+//                   >
+//                     <AiOutlineSearch size={17} />
+//                   </button>
+//                   <input
+//                     type="text"
+//                     value={city}
+//                     placeholder="Search city…"
+//                     onChange={(e) => setCity(e.target.value)}
+//                     onKeyDown={(e) =>
+//                       e.key === "Enter" && city.trim() && fetchDataByCity(city)
+//                     }
+//                     className="flex-1 bg-transparent outline-none text-slate-100 placeholder-slate-500 text-sm"
+//                   />
+//                 </div>
+
+//                 <button className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-100 hover:border-slate-500 transition-colors">
+//                   <MdAdd size={18} />
+//                 </button>
+
+//                 <div className="relative">
+//                   <button
+//                     onClick={openContextMenu}
+//                     className="w-10 h-10 flex items-center justify-center rounded-xl bg-slate-800 border border-slate-700 text-slate-400 hover:text-slate-100 hover:border-slate-500 transition-colors"
+//                   >
+//                     <MdSettings size={18} />
+//                   </button>
+
+//                   {contextMenu.show && (
+//                     <div
+//                       ref={contextRef}
+//                       className={`absolute top-12 right-0 z-50 min-w-[11rem] bg-slate-800 border border-slate-700 rounded-2xl p-2 shadow-2xl transition-all duration-200 ${menuAnimation
+//                         ? "opacity-100 translate-y-0"
+//                         : "opacity-0 -translate-y-2"
+//                         }`}
+//                       onClick={(e) => e.stopPropagation()}
+//                     >
+//                       {avatar ? (
+//                         <div className="flex items-center gap-2 px-3 py-2 mb-1">
+//                           <img
+//                             src={avatar}
+//                             className="w-7 h-7 rounded-full object-cover"
+//                             alt="avatar"
+//                           />
+//                           <span className="font-semibold text-sm text-slate-100">
+//                             {fullName}
+//                           </span>
+//                         </div>
+//                       ) : (
+//                         <button
+//                           onClick={() => navigate("/sign_up")}
+//                           className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+//                         >
+//                           Sign Up
+//                         </button>
+//                       )}
+//                       <button
+//                         onClick={() => navigate("/sign_in")}
+//                         className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+//                       >
+//                         Sign In
+//                       </button>
+//                       <div className="h-px bg-slate-700 my-1" />
+//                       <button
+//                         onClick={downloadData}
+//                         className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+//                       >
+//                         Download Data
+//                       </button>
+//                       <button
+//                         onClick={showHistory}
+//                         className="w-full text-left text-sm text-slate-200 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+//                       >
+//                         History
+//                       </button>
+//                       <div className="h-px bg-slate-700 my-1" />
+//                       <button
+//                         onClick={logout}
+//                         className="w-full text-left text-sm text-red-400 px-3 py-2 rounded-xl hover:bg-slate-700 transition-colors"
+//                       >
+//                         Log Out
+//                       </button>
+//                     </div>
+//                   )}
+//                 </div>
+//               </div>
+
+//               {/* Big Main Temperature area */}
+//               <div className="mt-6">
+
+//                 {/* Area name */}
+//                 <h1 className="text-4xl md:text-5xl font-bold tracking-tight text-slate-100 leading-none">
+//                   {data?.city}
+//                 </h1>
+
+//                 {/* Day Name and Time */}
+//                 <p className="text-slate-400 text-xs md:text-sm mt-1">
+//                   {time.toLocaleDateString("en-US", {
+//                     weekday: "long",
+//                     month: "long",
+//                     day: "numeric",
+//                   })}
+//                 </p>
+
+//                 {/* Temperature */}
+//                 <div className="flex items-start mt-4">
+//                   <span className="text-[8rem] md:text-[10rem] font-bold tracking-tighter leading-none text-slate-100">
+//                     {Math.round(data?.temperature)}
+//                   </span>
+//                   <span className="text-3xl md:text-4xl font-light text-slate-400 mt-4">
+//                     °C
+//                   </span>
+//                 </div>
+
+//                 {/* Condition pill + AQI pill — same row */}
+//                 <div className="flex items-center gap-2 mt-3 flex-wrap">
+//                   <span className="bg-orange-500/15 text-orange-400 text-xs font-semibold px-4 py-1.5 rounded-full">
+//                     {weatherConditions}
+//                   </span>
+//                   <span
+//                     className={`text-xs font-semibold px-4 py-1.5 rounded-full ${aqiBadgeClass}`}
+//                   >
+//                     AQI {AQI} · {AQIlabel}
+//                   </span>
+//                 </div>
+//                 {/* ── Forecast CTA button ── */}
+//                 <button
+//                   onClick={() =>
+//                     window.open(
+//                       "https://forecasting-platform.streamlit.app/",
+//                       "_self"
+//                     )
+//                   }
+//                   className="mt-5 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 text-slate-950 font-bold text-sm py-3.5 rounded-2xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all duration-200"
+//                 >
+//                   <MdShowChart size={18} />
+//                   View Extended Forecast
+//                 </button>
+//               </div>
+
+//               {/* CARDS SECTION */}
+//               <div className="mt-6 flex flex-col gap-4 xl:grid xl:grid-cols-2 xl:gap-6">
+
+//                 {/* ── AQI detail card ── */}
+//                 <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5">
+//                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">
+//                     Air Quality Index
+//                   </p>
+//                   <div className="flex items-center gap-5">
+//                     <div className="relative shrink-0 w-[90px] h-[90px]">
+//                       <svg
+//                         width="100%"
+//                         height="100%"
+//                         viewBox="0 0 90 90"
+//                         className="-rotate-90"
+//                       >
+//                         <circle
+//                           cx="45" cy="45" r={R}
+//                           fill="none"
+//                           stroke="#1e293b"
+//                           strokeWidth="6"
+//                         />
+//                         <circle
+//                           cx="45" cy="45" r={R}
+//                           fill="none"
+//                           stroke={aqiColor}
+//                           strokeWidth="6"
+//                           strokeLinecap="round"
+//                           strokeDasharray={`${filled} ${CIRC}`}
+//                         />
+//                       </svg>
+//                       <div className="absolute inset-0 flex flex-col items-center justify-center">
+//                         <span className="text-xl font-bold text-slate-100 leading-none">
+//                           {AQI}
+//                         </span>
+//                         <span className="text-[9px] text-slate-400 mt-0.5">AQI</span>
+//                       </div>
+//                     </div>
+
+//                     <div className="flex-1">
+//                       <span
+//                         className={`inline-block text-xs font-semibold px-3 py-1 rounded-full mb-2 ${aqiBadgeClass}`}
+//                       >
+//                         {AQIlabel}
+//                       </span>
+//                       <p className="text-xs md:text-sm text-slate-400 leading-relaxed">
+//                         {AQI <= 50
+//                           ? "Air quality is satisfactory."
+//                           : AQI <= 100
+//                             ? "Acceptable air quality."
+//                             : AQI <= 150
+//                               ? "Breathing discomfort for people with lung disease."
+//                               : AQI <= 200
+//                                 ? "Unhealthy for general population."
+//                                 : "Very unhealthy conditions."}
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
+
+//                 {/* Weather Details Data */}
+//                 <div className="grid grid-cols-2 gap-3">
+//                   {[
+//                     {
+//                       label: "Feels Like",
+//                       value: `${Math.round(data?.feels_like)}°C`,
+//                     },
+//                     {
+//                       label: "Humidity",
+//                       value: `${data?.humidity}%`,
+//                     },
+//                     {
+//                       label: "Wind",
+//                       // FIX: optional chaining + nullish fallback to avoid NaN
+//                       value: `${Math.round((data?.wind?.speed))} m/s`,
+//                     },
+//                     {
+//                       label: "Pressure",
+//                       value: `${data?.pressure} hPa`,
+//                     },
+//                   ].map(({ label, value }) => (
+//                     <div
+//                       key={label}
+//                       className="bg-slate-800 border border-slate-700 rounded-2xl p-4"
+//                     >
+//                       <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-1">
+//                         {label}
+//                       </p>
+//                       <p className="text-xl font-bold text-slate-100">{value}</p>
+//                     </div>
+//                   ))}
+//                 </div>
+
+//                 {/* Today's temperature range */}
+//                 <div className="bg-slate-800 border border-slate-700 rounded-2xl p-5 xl:col-span-2">
+//                   <p className="text-[10px] font-semibold uppercase tracking-widest text-slate-400 mb-4">
+//                     Today's Range
+//                   </p>
+//                   <div className="flex items-center gap-4">
+//                     <div className="flex-1 text-center">
+//                       <p className="text-slate-400 text-xs mb-1">Low</p>
+//                       <p className="text-3xl font-bold text-slate-100">
+//                         {Math.round(data?.temp_min)}°
+//                       </p>
+//                     </div>
+
+//                     <div className="flex-[2] h-2 rounded-full bg-slate-700 relative overflow-hidden">
+//                       <div
+//                         className="absolute left-0 top-0 h-full rounded-full bg-gradient-to-r from-blue-400 to-orange-400"
+//                         style={{
+//                           width: `${Math.min(
+//                             ((data?.temperature -
+//                               data?.temp_min) /
+//                               Math.max(
+//                                 data?.temp_max -
+//                                 data?.temp_min,
+//                                 1
+//                               )) *
+//                             100,
+//                             100
+//                           )}%`,
+//                         }}
+//                       />
+//                     </div>
+//                     <div className="flex-1 text-center">
+//                       <p className="text-slate-400 text-xs mb-1">High</p>
+//                       <p className="text-3xl font-bold text-slate-100">
+//                         {Math.round(data?.temp_max)}°
+//                       </p>
+//                     </div>
+//                   </div>
+//                 </div>
+//               </div>
+//             </div>
+//           ) : (
+//             /* ── Empty / search state ── */
+//             <div className="min-h-screen flex flex-col items-center justify-center px-8 gap-6">
+//               <div className="text-center">
+//                 <div className="w-[10rem] md:w-[15rem] mx-auto">
+//                   <img src="/WeatherIcon.png" alt="" />
+//                 </div>
+//                 {/* <h2 className="text-2xl md:text-3xl font-bold text-slate-100">
+               
+//                   ClimaSphere
+//                 </h2> */}
+//                 <span className="text-lg sm:text-xl md:text-2xl lg:text-3xl text-orange-400 font-extrabold tracking-tight shrink-0 select-none">
+//                   ClimaSphere
+//                 </span>
+//                 <p className="text-slate-400 text-sm mt-1">
+//                   Real-time weather &amp; air quality
+//                 </p>
+//               </div>
+//               <div className="w-full max-w-xs md:max-w-sm flex items-center gap-2 bg-slate-800 border border-slate-700 rounded-full px-4 h-12 focus-within:border-slate-500 transition-colors">
+//                 <AiOutlineSearch className="text-slate-400 shrink-0" size={18} />
+//                 <input
+//                   value={city}
+//                   onChange={(e) => setCity(e.target.value)}
+//                   onKeyDown={(e) =>
+//                     e.key === "Enter" && city.trim() && fetchDataByCity(city)
+//                   }
+//                   placeholder="Enter city name"
+//                   className="flex-1 bg-transparent outline-none text-slate-100 placeholder-slate-500"
+//                 />
+//               </div>
+//               <p className="text-xs text-slate-500">Press Enter to search</p>
+//             </div>
+//           )}
+//         </div>
+//       )}
+
+//       {/* ── Error Dialog ── */}
+//       {dilogueBox && (
+//         <>
+//           <style>{`
+//             @keyframes modal-pop {
+//               0%   { opacity: 0; transform: scale(0.85) translateY(16px); }
+//               100% { opacity: 1; transform: scale(1) translateY(0); }
+//             }
+//             @keyframes overlay-fade {
+//               0%   { opacity: 0; }
+//               100% { opacity: 1; }
+//             }
+//             .modal-overlay { animation: overlay-fade 0.25s ease forwards; }
+//             .modal-box     { animation: modal-pop 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+//           `}</style>
+//           <div className="fixed inset-0 z-50 flex items-center justify-center modal-overlay">
+//             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+//             <div className="relative bg-slate-900 border border-slate-700 rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center modal-box">
+//               <div className="w-12 h-12 rounded-full bg-red-500/15 border border-red-500/30 flex items-center justify-center mx-auto mb-4">
+//                 <svg
+//                   width="22" height="22" viewBox="0 0 24 24"
+//                   fill="none" stroke="#f87171"
+//                   strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+//                 >
+//                   <circle cx="12" cy="12" r="10" />
+//                   <line x1="12" y1="8" x2="12" y2="12" />
+//                   <line x1="12" y1="16" x2="12.01" y2="16" />
+//                 </svg>
+//               </div>
+//               <h2 className="text-base font-semibold text-red-400 mb-2">Error</h2>
+//               <p className="text-slate-400 text-sm mb-6 leading-relaxed">
+//                 {errorMessage}
+//               </p>
+//               <button
+//                 onClick={onClose}
+//                 className="w-full bg-orange-500 hover:bg-orange-600 active:scale-95 text-white font-semibold text-sm h-11 rounded-xl transition-all duration-200"
+//               >
+//                 OK
+//               </button>
+//             </div>
+//           </div>
+//         </>
+//       )}
+
+//       <Outlet />
+//       <ButtomNavbar />
+//     </div>
+//   );

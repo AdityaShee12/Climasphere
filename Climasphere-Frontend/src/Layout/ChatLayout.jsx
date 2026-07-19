@@ -310,8 +310,7 @@ const ChatLayout = () => {
 
     // Status upload system
     const statusUpload = () => {
-        setErrorMessage("The status uploading system will be available soon");
-        setDilogueBox(true);
+        navigate("/postLayout");
     };
 
     // Notification showing system
@@ -408,7 +407,7 @@ const ChatLayout = () => {
                                     </button>
 
                                     {/* Group message */}
-                                    <button
+                                    {/* <button
                                         className="w-[44px] h-[44px] flex items-center justify-center rounded-xl transition-all duration-200"
                                         style={{
                                             color: state === "groupMessage" ? '#f97316' : '#475569',
@@ -420,7 +419,7 @@ const ChatLayout = () => {
                                         ) : (
                                             <MdOutlineGroup size={24} onClick={() => stateChange("groupMessage")} />
                                         )}
-                                    </button>
+                                    </button> */}
 
                                     {/* status */}
                                     <button

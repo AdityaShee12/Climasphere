@@ -130,16 +130,17 @@ const PostPage = () => {
 
     return (
         <div className="min-h-screen bg-slate-950">
-            <Navbar />
+            {/* <Navbar /> */}
 
             <main className="max-w-2xl mx-auto px-4 py-6 space-y-4">
                 {/* Create post shortcut */}
                 <div className="bg-slate-800 rounded-2xl border border-slate-700 p-4 flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-orange-500 to-amber-400 text-slate-950 flex items-center justify-center text-xs font-bold shrink-0">
-                        {CURRENT_USER?.initials}
-                    </div>
+                    <img
+                        src={avatar}
+                        className="w-10 h-10 rounded-full"
+                    />
                     <button className="flex-1 text-left text-sm text-slate-400 bg-slate-900 border border-slate-700 rounded-full px-4 py-2.5 hover:border-slate-500 hover:text-slate-300 transition-colors">
-                        What's on your mind, {CURRENT_USER.name.split(" ")[0]}?
+                        What's on your mind, {fullName}?
                     </button>
                 </div>
 

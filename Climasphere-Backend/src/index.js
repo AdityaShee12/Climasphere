@@ -113,65 +113,109 @@ function normalizeIndiaLocation(loc) {
 
 // Cron Job: Save India states data every 6 hours
 
-const indianStates = [
-  "Delhi",
-  "Kolkata",
-  "Mumbai",
-  "Chennai",
-  "Bengaluru",
-  "Hyderabad",
-  "Ahmedabad",
-  "Jaipur",
-  "Lucknow",
-  "Patna",
-  "Bhopal",
-  "Ranchi",
-  "Guwahati",
-  "Bhubaneswar",
-  "Chandigarh",
-  "Shimla",
-  "Dehradun",
-  "Panaji",
-];
+// const indianStates = [
+//   "Delhi",
+//   "Kolkata",
+//   "Mumbai",
+//   "Chennai",
+//   "Bengaluru",
+//   "Hyderabad",
+//   "Ahmedabad",
+//   "Jaipur",
+//   "Lucknow",
+//   "Patna",
+//   "Bhopal",
+//   "Ranchi",
+//   "Guwahati",
+//   "Bhubaneswar",
+//   "Chandigarh",
+//   "Shimla",
+//   "Dehradun",
+//   "Panaji",
+// ];
 
-cron.schedule("0 */12 * * *", async () => {
-  console.log("Running 12-hour cron job for Indian states");
+// cron.schedule("0 */12 * * *", async () => {
+//   console.log("Running 12-hour cron job for Indian states");
 
-  for (const city of indianStates) {
-    try {
-      const weatherRes = await axios.get(
-        `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
-      );
-      const { lon, lat } = weatherRes.data.coord;
+//   for (const city of indianStates) {
+//     try {
+//       const weatherRes = await axios.get(
+//         `${WEATHER_API}?q=${city}&appid=${API_KEY}&units=metric`
+//       );
+//       const { lon, lat } = weatherRes.data.coord;
 
-      const pollutionRes = await axios.get(
-        `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
-      );
-      await Weather.create({
-        cityId: weatherRes.data.id,
-        name: weatherRes.data.name,
-        coord: weatherRes.data.coord,
-        weather: weatherRes.data.weather,
-        mainWeather: weatherRes.data.main,
-        base: weatherRes.data.base,
-        visibility: weatherRes.data.visibility,
-        wind: weatherRes.data.wind,
-        clouds: weatherRes.data.clouds,
-        dt: weatherRes.data.dt,
-        sys: weatherRes.data.sys,
-        timezone: weatherRes.data.timezone,
-        cod: weatherRes.data.cod,
-        pollution: {
-          aqi: pollutionRes.data.list[0].main.aqi,
-          components: pollutionRes.data.list[0].components,
-          dt: pollutionRes.data.list[0].dt,
-        },
-      });
-    } catch (err) {
-      console.error(`Error saving ${city}:, err.message`);
-    }
+//       const pollutionRes = await axios.get(
+//         `${POLLUTION_API}?lat=${lat}&lon=${lon}&appid=${API_KEY}`
+//       );
+//       await Weather.create({
+//         cityId: weatherRes.data.id,
+//         name: weatherRes.data.name,
+//         coord: weatherRes.data.coord,
+//         weather: weatherRes.data.weather,
+//         mainWeather: weatherRes.data.main,
+//         base: weatherRes.data.base,
+//         visibility: weatherRes.data.visibility,
+//         wind: weatherRes.data.wind,
+//         clouds: weatherRes.data.clouds,
+//         dt: weatherRes.data.dt,
+//         sys: weatherRes.data.sys,
+//         timezone: weatherRes.data.timezone,
+//         cod: weatherRes.data.cod,
+//         pollution: {
+//           aqi: pollutionRes.data.list[0].main.aqi,
+//           components: pollutionRes.data.list[0].components,
+//           dt: pollutionRes.data.list[0].dt,
+//         },
+//       });
+//     } catch (err) {
+//       console.error(`Error saving ${city}:, err.message`);
+//     }
+//   }
+// });
+
+// lastApiCallTime MongoDB তে save থাকবে
+let lastApiCallTime = null;
+
+async function fetchData() {
+  console.log("API Called:", new Date());
+
+  // এখানে API call করবেন
+
+  lastApiCallTime = Date.now();
+
+  // MongoDB তে save করুন
+  // await Setting.updateOne({}, { lastApiCallTime }, { upsert: true });
+
+  scheduleNextCall();
+}
+
+async function scheduleNextCall() {
+  // MongoDB থেকে load করুন
+  // const setting = await Setting.findOne({});
+  // lastApiCallTime = setting?.lastApiCallTime;
+
+  const FOUR_HOURS = 4 * 60 * 60 * 1000;
+
+  if (!lastApiCallTime) {
+    return fetchData(); // প্রথমবার
   }
-});
+
+  const now = Date.now();
+  const elapsed = now - lastApiCallTime;
+
+  if (elapsed >= FOUR_HOURS) {
+    return fetchData();
+  }
+
+  const remaining = FOUR_HOURS - elapsed;
+
+  console.log(`Next API call in ${remaining / 1000} seconds`);
+
+  setTimeout(fetchData, remaining);
+}
+
+// Server start হলে
+scheduleNextCall();
 
 connectDB()
   .then(() => {

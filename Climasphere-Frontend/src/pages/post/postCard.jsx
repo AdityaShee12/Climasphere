@@ -68,7 +68,7 @@ const PostCard = ({ fullName, avatar, postDetails, postId }) => {
     };
 
     useEffect(() => {
-        console.log("PCOMMENTS", postcomments);
+        console.log("PCOMMENTS", postDetails);
     }, [postcomments]);
 
     useEffect(() => {
@@ -129,7 +129,7 @@ const PostCard = ({ fullName, avatar, postDetails, postId }) => {
 
                 {/* Content */}
                 <p className="text-slate-800 text-[15px] leading-relaxed mt-3">
-                    {post.content}
+                    {post.caption}
                 </p>
 
                 {post?.pic && (

@@ -1,90 +1,224 @@
-# Climasphere 🌍
+# 🌍 ClimaSphere
 
-Climasphere is a MERN Stack web application focused on environmental data, analysis, and education. The platform allows users to view weather and air pollution data based on their location, download datasets, access analytical insights, and learn from environment-related knowledge. Some community and AI features are planned for future releases. The main goal is environmental education, not just showing temperature or AQI numbers.
-
----
-
-## Project Features
-
-- Automatic location detection
-- Real-time weather and pollution data
-- Download weather and pollution datasets
-- Data analyst portal for uploading analytical insights
-- View analytical insights uploaded by analysts
-- Educational focus on environmental data
-- Responsive design for mobile, tablet, and desktop
-- Community chat and posts (in development)
-- AI-assisted insights explanation (planned)
+**ClimaSphere** is a full-stack MERN (MongoDB, Express.js, React.js, Node.js) web application that provides real-time weather and air pollution data, empowers data analysts to derive and share environmental insights, and creates a collaborative space for environmentologists and researchers to publish content and exchange knowledge.
 
 ---
 
-## Feature Status
+## 📌 Table of Contents
 
-| Feature | Status |
-|---------|--------|
-| Location-based weather & pollution data | Completed |
-| Data download for users | Completed |
-| Data analyst portal | Completed |
-| Insights publishing & viewing | Completed |
-| Community chat & posts | In Development |
-| AI integration for insights | Planned |
-| Responsive for mobile & tablet | Completed |
-
----
-
-## Tech Stack
-
-### Frontend
-- React.js (Vite)
-- React Router
-- Redux Toolkit
-- Tailwind CSS
-
-### Backend
-- Node.js
-- Express.js
-- RESTful APIs
-- JWT Authentication
-
-### Database
-- MongoDB
-
-### Real-Time & Media
-- WebSocket (real-time data)
-- Cloudinary (media storage)
-
-### Authentication & Security
-- JWT-based authentication
-- AES-based encryption (planned for insights)
-- OAuth (planned)
+- [Overview](#overview)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [User Roles](#user-roles)
+- [System Architecture](#system-architecture)
+- [Installation & Setup](#installation--setup)
+- [Environment Variables](#environment-variables)
+- [Folder Structure](#folder-structure)
+- [Authentication Flow](#authentication-flow)
+- [Screenshots](#screenshots)
+- [Future Improvements](#future-improvements)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
-## System Architecture
+## 🧭 Overview
 
-Client (React + Redux) communicates via REST APIs and WebSocket with Server (Node.js + Express) which interacts with MongoDB and integrates Cloudinary, APIs, and planned AI modules.
+ClimaSphere bridges the gap between raw environmental data and meaningful insight. Using the **OpenWeather API**, the platform fetches live weather and air pollution data for users to explore. Beyond simple data viewing, ClimaSphere introduces role-based functionality — allowing **data analysts** to download data for offline analysis and upload their findings as insights, while **environmentologists and researchers** can publish blogs/posts and interact with other users through an in-app chat system for knowledge sharing.
+
+---
+
+## ✨ Features
+
+### 🔐 Authentication
+- Secure Sign Up / Sign In system
+- OTP (One-Time Password) verification via **Nodemailer** during registration
+- **JWT (JSON Web Token)**-based authentication for protected routes and session management
+
+### 🌦️ Weather & Pollution Data
+- Real-time weather data fetched using the **OpenWeather API**
+- Real-time air pollution/AQI data fetched using the **OpenWeather Pollution API**
+- Clean, user-friendly dashboard to visualize current conditions
+
+### 📊 Data Analysis Module
+- Data analysts can **download fetched weather/pollution data in CSV format**
+- Analysts can perform their own analysis offline and **upload their insights/analysis results** back to the platform
+- Other users can browse and view these published insights
+
+### 📝 Environmental Blogging
+- Environmentologists and researchers can write and publish **environment-related posts/blogs**
+- Encourages awareness and sharing of research findings with the community
+
+### 💬 Real-Time Chat
+- In-app chatting system enabling users to **connect and share knowledge** directly with one another
 
 ---
 
-## Roadmap
+## 🛠️ Tech Stack
 
-### Phase 1 Completed
-- Automatic location detection
-- Real-time weather & pollution display
-- Data download for users
-- Data analyst portal
-- Educational insights display
-- Responsive design
-
-### Phase 2 In Progress
-- Community chat & posts
-- Social interaction features
-
-### Phase 3 Planned
-- AI integration for explaining analysis
-- Enhanced educational support features
+| Layer            | Technology                          |
+|-------------------|--------------------------------------|
+| Frontend          | React.js, Tailwind CSS               |
+| Backend           | Node.js, Express.js                  |
+| Database          | MongoDB                              |
+| Authentication    | JWT, OTP (via Nodemailer)            |
+| Email Service     | Nodemailer                           |
+| External API      | OpenWeather API (Weather & Pollution)|
 
 ---
+
+## 👥 User Roles
+
+| Role                          | Capabilities                                                                 |
+|-------------------------------|-------------------------------------------------------------------------------|
+| **General User**              | View weather & pollution data, read insights, read blogs/posts, use chat     |
+| **Data Analyst**              | Download data as CSV, upload analysis results/insights                      |
+| **Environmentologist/Researcher** | Write & publish environment-related blogs/posts, use chat                |
+
+---
+
+## 🏗️ System Architecture
+
+```
+Client (React.js + Tailwind CSS)
+        │
+        ▼
+Express.js REST API (Node.js)
+        │
+   ┌────┼─────────────┐
+   ▼    ▼              ▼
+MongoDB  OpenWeather API   Nodemailer (OTP Emails)
+```
+
+---
+
+## ⚙️ Installation & Setup
+
+### Prerequisites
+- Node.js (v16 or later)
+- MongoDB (local instance or MongoDB Atlas)
+- An OpenWeather API key
+- An email account/service configured for Nodemailer (e.g., Gmail App Password)
+
+### Steps
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/your-username/climasphere.git
+   cd climasphere
+   ```
+
+2. **Install backend dependencies**
+   ```bash
+   cd server
+   npm install
+   ```
+
+3. **Install frontend dependencies**
+   ```bash
+   cd ../client
+   npm install
+   ```
+
+4. **Set up environment variables**
+   Create a `.env` file in the `server` directory (see [Environment Variables](#environment-variables) below).
+
+5. **Run the backend server**
+   ```bash
+   cd server
+   npm run dev
+   ```
+
+6. **Run the frontend**
+   ```bash
+   cd client
+   npm start
+   ```
+
+7. Open `http://localhost:3000` in your browser.
+
+---
+
+## 🔑 Environment Variables
+
+Create a `.env` file inside the `server` folder with the following keys:
+
+```env
+PORT=5000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret_key
+OPENWEATHER_API_KEY=your_openweather_api_key
+EMAIL_USER=your_email_address
+EMAIL_PASS=your_email_app_password
+```
+
+---
+
+## 📁 Folder Structure
+
+```
+ClimaSphere/
+├── ClimaSphere-Frontend/                  # React.js frontend
+│   ├── src/
+│   │   ├── components/
+│   │   ├── pages/
+│   │   ├── context/
+│   │   ├── services/         # API call functions
+│   │   └── App.js
+│   └── tailwind.config.js
+│
+├── ClimaSphere-Backend/                  # Node.js + Express backend
+│   ├── controllers/
+│   ├── models/
+│   ├── routes/
+│   ├── middleware/           # JWT auth middleware
+│   ├── utils/                 # Nodemailer, OTP helpers
+│   └── server.js
+│
+└── README.md
+```
+
+---
+
+## 🔐 Authentication Flow
+
+1. User signs up with email and basic details.
+2. An OTP is generated and sent to the user's email using **Nodemailer**.
+3. User verifies the OTP to activate their account.
+4. On successful Sign In, the server issues a **JWT token**.
+5. The token is stored client-side and sent with each request to access protected routes.
+
+---
+
+## 📸 Screenshots
+
+> *(Add screenshots of the dashboard, weather view, CSV download, insights page, blog page, and chat interface here.)*
+
+---
+
+## 🚀 Future Improvements
+
+- Push notifications for severe weather alerts
+- Interactive data visualization (charts/graphs) for pollution trends
+- Advanced search and filtering for blogs and insights
+- Mobile-responsive PWA support
+- Admin panel for content moderation
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome! Feel free to fork this repository, create a new branch, and submit a pull request.
+
+---
+
+## 📄 License
+
+This project is developed for academic/college purposes. You may use, modify, and distribute it with proper attribution.
+
+---
+
+**Developed as a college project using the MERN Stack.**
 
 ## Installation and Setup
 

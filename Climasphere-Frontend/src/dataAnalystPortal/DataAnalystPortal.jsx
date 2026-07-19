@@ -29,7 +29,8 @@ const DataAnalystPortal = () => {
     const [insights, setInsights] = useState([
         { title: "", description: "", image: null },
     ]);
-
+    
+    const [selectedInsight, setSelectedInsight] = useState(null);
     const [saveInsights, setSaveInsights] = useState([]);
     const [loading, setLoading] = useState(false);
 
@@ -257,7 +258,8 @@ const DataAnalystPortal = () => {
                                 {saveInsights.map((item, index) => (
                                     <div
                                         key={item._id}
-                                        className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col gap-3 hover:border-slate-600 transition-colors"
+                                        onClick={() => setSelectedInsight({ ...item, index })}
+                                        className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col gap-3 hover:border-orange-500/50 hover:bg-slate-800/80 transition-colors cursor-pointer"
                                     >
                                         {/* Index badge */}
                                         <div className="flex items-center justify-between">
@@ -302,6 +304,63 @@ const DataAnalystPortal = () => {
                 {/* end main col */}
 
             </div>
+
+            {/* ════════════ FULLSCREEN INSIGHT MODAL ════════════ */}
+            {selectedInsight && (
+                <div
+                    className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-start justify-center overflow-y-auto p-4 sm:p-8"
+                    onClick={() => setSelectedInsight(null)}
+                >
+                    <div
+                        onClick={(e) => e.stopPropagation()}
+                        className="w-full max-w-5xl bg-slate-900 border border-slate-800 rounded-[24px] my-auto flex flex-col overflow-hidden"
+                    >
+                        {/* Header */}
+                        <div className="flex items-center justify-between px-7 py-5 border-b border-slate-800 shrink-0">
+                            <div className="flex items-center gap-3">
+                                <span className="w-7 h-7 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[11px] font-bold text-orange-400">
+                                    {selectedInsight.index + 1}
+                                </span>
+                                <span className="text-[10px] font-bold uppercase tracking-widest text-slate-500">
+                                    Insight #{selectedInsight.index + 1}
+                                </span>
+                            </div>
+                            <button
+                                onClick={() => setSelectedInsight(null)}
+                                className="p-2 rounded-full hover:bg-slate-800 text-slate-400 hover:text-slate-100 transition-colors"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <line x1="18" y1="6" x2="6" y2="18" />
+                                    <line x1="6" y1="6" x2="18" y2="18" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        {/* Body */}
+                        <div className="px-7 py-7 flex flex-col gap-5 overflow-y-auto">
+                            {selectedInsight.title && (
+                                <h3 className="text-2xl font-bold text-slate-100 leading-snug">
+                                    {selectedInsight.title}
+                                </h3>
+                            )}
+
+                            {selectedInsight.description && (
+                                <p className="text-sm text-slate-400 leading-relaxed">
+                                    {selectedInsight.description}
+                                </p>
+                            )}
+
+                            {selectedInsight.image && (
+                                <img
+                                    src={selectedInsight.image}
+                                    alt={selectedInsight.title || "Insight"}
+                                    className="w-full max-h-[70vh] object-contain rounded-2xl border border-slate-800 bg-slate-950"
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
@@ -309,101 +368,7 @@ const DataAnalystPortal = () => {
 export default DataAnalystPortal;
 
 
-// import { useSelector } from "react-redux";
-// import { useState, useEffect } from "react";
-// import { insightAPI, downloadData } from "../api/api.js";
-
-// const DataAnalystPortal = () => {
-
-//     const { userName, fullName, avatar, userProffesion } = useSelector(
-//         (state) => state.user.user
-//     );
-//     console.log("DataAD", userName, fullName, avatar, userProffesion);
-
-//     /* ---------------- CSV DOWNLOAD ---------------- */
-//     const downloadCSV = async () => {
-//         const res = await downloadData.downloadCSV();
-
-//         const blob = new Blob([res.data], {
-//             type: "text/csv;charset=utf-8;",
-//         });
-
-//         const url = window.URL.createObjectURL(blob);
-//         const link = document.createElement("a");
-//         link.href = url;
-//         link.download = "weather_pollution_analytics_data.csv";
-//         link.click();
-//         window.URL.revokeObjectURL(url);
-//     };
-
-//     /* ---------------- UPLOAD FORM STATE ---------------- */
-//     const [insights, setInsights] = useState([
-//         { title: "", description: "", image: null },
-//     ]);
-
-//     const [loading, setLoading] = useState(false);
-
-//     /* ---------------- SAVED INSIGHTS STATE ---------------- */
-//     const [savedInsights, setSavedInsights] = useState([]);
-
-//     /* ---------------- FETCH SAVED INSIGHTS ---------------- */
-//     const fetchInsights = async () => {
-//         try {
-//             const res = await insightAPI.fetchInsight();
-//             setSavedInsights(res.data.data || []);
-//         } catch (err) {
-//             console.log("Failed to fetch insights");
-//         }
-//     };
-
-//     useEffect(() => {
-//         fetchInsights();
-//     }, []);
-
-//     /* ---------------- FORM HANDLERS ---------------- */
-//     const addInsight = () => {
-//         setInsights([...insights, { title: "", description: "", image: null }]);
-//     };
-
-//     const removeInsight = (index) => {
-//         setInsights(insights.filter((_, i) => i !== index));
-//     };
-
-//     const handleChange = (index, field, value) => {
-//         const updated = [...insights];
-//         updated[index][field] = value;
-//         setInsights(updated);
-//     };
-
-//     /* ---------------- UPLOAD ---------------- */
-//     const uploadInsights = async () => {
-//         try {
-//             setLoading(true);
-
-//             const formData = new FormData();
-//             formData.append("title", insights[0].title);
-//             formData.append("description", insights[0].description);
-
-//             insights.forEach((item) => {
-//                 if (item.image) {
-//                     formData.append("insights", item.image);
-//                 }
-//             });
-
-//             await insightAPI.uploadInsight(formData);
-
-//             setInsights([{ title: "", description: "", image: null }]);
-//             fetchInsights(); // ✅ auto refresh
-
-//             alert("Insights uploaded successfully");
-//         } catch (err) {
-//             alert("Upload failed");
-//         } finally {
-//             setLoading(false);
-//         }
-//     };
-
-//     return (
+// return (
 //         <div className="min-h-screen bg-[#020817] px-6 py-8">
 //             <div className="w-full max-w-7xl mx-auto min-h-[calc(100vh-64px)] flex flex-col lg:flex-row gap-6">
 
@@ -434,7 +399,7 @@ export default DataAnalystPortal;
 //                         {/* ── Stats ── */}
 //                         <div className="grid grid-cols-2 gap-3">
 //                             {[
-//                                 { label: "Insights", value: savedInsights.length },
+//                                 { label: "Insights", value: saveInsights.length },
 //                                 { label: "Cities", value: 20 }
 //                             ].map(({ label, value }) => (
 //                                 <div
@@ -537,40 +502,73 @@ export default DataAnalystPortal;
 //                         </div>
 //                     </div>
 
-//                     {/* ── Saved Insights ── */}
-//                     <div className="bg-slate-900 border border-slate-800 rounded-[20px] p-7 flex-1">
-//                         <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-5">
-//                             Saved Insights
-//                         </p>
+//                     <div className="flex-1 min-w-0">
+//                         <div className="bg-slate-900 border border-slate-800 rounded-[20px] p-7 h-full flex flex-col">
 
-//                         {savedInsights.length === 0 ? (
-//                             <div className="flex items-center justify-center h-40">
-//                                 <p className="text-sm text-slate-600">No insights uploaded yet</p>
-//                             </div>
-//                         ) : (
+//                             {/* ── Section label ── */}
+//                             <p className="text-[9px] font-bold uppercase tracking-widest text-slate-500 mb-6">
+//                                 Published Insights
+//                             </p>
+
+//                             {/* ── Empty state ── */}
+//                             {saveInsights.length === 0 && (
+//                                 <div className="flex-1 flex flex-col items-center justify-center gap-3 py-16">
+//                                     <div className="w-14 h-14 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center">
+//                                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+//                                             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+//                                             <polyline points="14 2 14 8 20 8" />
+//                                             <line x1="12" y1="18" x2="12" y2="12" />
+//                                             <line x1="9" y1="15" x2="15" y2="15" />
+//                                         </svg>
+//                                     </div>
+//                                     <p className="text-sm text-slate-600">No insights available</p>
+//                                 </div>
+//                             )}
+
+//                             {/* ── Insights grid ── */}
 //                             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-//                                 {savedInsights.map((item) => (
+//                                 {saveInsights.map((item, index) => (
 //                                     <div
 //                                         key={item._id}
-//                                         className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col gap-2.5"
+//                                         className="bg-slate-800 border border-slate-700 rounded-2xl p-4 flex flex-col gap-3 hover:border-slate-600 transition-colors"
 //                                     >
+//                                         {/* Index badge */}
+//                                         <div className="flex items-center justify-between">
+//                                             <span className="text-[9px] font-bold uppercase tracking-widest text-slate-600">
+//                                                 Insight #{index + 1}
+//                                             </span>
+//                                             <span className="w-5 h-5 rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-[9px] font-bold text-orange-400">
+//                                                 {index + 1}
+//                                             </span>
+//                                         </div>
+
+//                                         {/* Title */}
 //                                         {item.title && (
-//                                             <p className="text-sm font-bold text-slate-100">{item.title}</p>
+//                                             <h4 className="text-sm font-bold text-slate-100 leading-snug">
+//                                                 {item.title}
+//                                             </h4>
 //                                         )}
+
+//                                         {/* Description */}
 //                                         {item.description && (
-//                                             <p className="text-xs text-slate-500 leading-relaxed">{item.description}</p>
+//                                             <p className="text-xs text-slate-500 leading-relaxed flex-1">
+//                                                 {item.description}
+//                                             </p>
 //                                         )}
+
+//                                         {/* Image */}
 //                                         {item.image && (
 //                                             <img
 //                                                 src={item.image}
-//                                                 alt={item.title}
+//                                                 alt="Insight"
 //                                                 className="w-full h-36 object-cover rounded-xl mt-1"
 //                                             />
 //                                         )}
 //                                     </div>
 //                                 ))}
 //                             </div>
-//                         )}
+
+//                         </div>
 //                     </div>
 
 //                 </div>
@@ -579,6 +577,3 @@ export default DataAnalystPortal;
 //             </div>
 //         </div>
 //     );
-// }
-
-// export default DataAnalystPortal;
