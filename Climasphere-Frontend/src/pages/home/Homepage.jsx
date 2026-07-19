@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { MdSettings, MdAdd } from "react-icons/md";
+import { MdSettings, MdAdd, MdShowChart } from "react-icons/md";
 import { AiOutlineSearch } from "react-icons/ai";
 import { clearUser } from "../../features/userSlice.js";
 import ButtomNavbar from "../../components/ButtomNavbar.jsx";
@@ -161,7 +161,7 @@ const Homepage = () => {
       const res = await weatherAPI.weatherData(cityName);
 
       console.log("Res", res);
-      
+
       setData(res.data.weather);
 
       const weatherData = res.data.weather;
@@ -337,9 +337,6 @@ const Homepage = () => {
     // FIX: only navigate if it's an auth-related message
     if (errorMessage.includes("login")) navigate("/sign_in");
   };
-
-  // ─── Derived values for JSX ───────────────────────────────────────────────
-  // FIX: these were used in JSX but never declared anywhere
 
   const R = 36;
   const CIRC = +(2 * Math.PI * R).toFixed(1);
@@ -546,6 +543,19 @@ const Homepage = () => {
                     AQI {AQI} · {AQIlabel}
                   </span>
                 </div>
+                {/* ── Forecast CTA button ── */}
+                <button
+                  onClick={() =>
+                    window.open(
+                      "https://forecasting-platform.streamlit.app/",
+                      "_self"
+                    )
+                  }
+                  className="mt-5 w-full flex items-center justify-center gap-2 bg-gradient-to-r from-orange-500 to-amber-400 hover:from-orange-400 hover:to-amber-300 text-slate-950 font-bold text-sm py-3.5 rounded-2xl shadow-lg shadow-orange-500/20 active:scale-[0.98] transition-all duration-200"
+                >
+                  <MdShowChart size={18} />
+                  View Extended Forecast
+                </button>
               </div>
 
               {/* CARDS SECTION */}

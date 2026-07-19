@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { upload } from "../middlewares/upload/multer.middleware.js";
-import { createPost, getPost, addView } from "../controllers/post/post.controller.js";
+import { createPost, getPost, likePost, addView } from "../controllers/post/post.controller.js";
 
 const router = Router();
 
@@ -16,9 +16,11 @@ router.route("/createPost").post(
 
 router.post("/getPost", getPost);
 
+router.post("/likePost", likePost);
+
 // router.post("/addView", addView);
 
-// router.post("/like", likePost);
+
 
 // router.post("/unlike", unlikePost);
 

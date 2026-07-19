@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
     Home,
     Users,
@@ -7,11 +7,24 @@ import {
     Search,
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const Navbar = () => {
 
     const CURRENT_USER = { name: "Aditya Rao", initials: "AR" };
     const navigate = useNavigate();
+    const { user } = useSelector(
+        (state) => state.user,
+    );
+    const [avatar, setAvatar] = useState("");
+
+    useEffect(() => {
+        if (!user) return;
+        const { _id, avatar } = user;
+        console.log("ID", _id);
+        setAvatar(avatar);
+    }, [user]);
+
     const active = (key) => {
         if (key === "create") {
             navigate("/postLayout/createPost");
@@ -32,14 +45,14 @@ const Navbar = () => {
     );
 
     return (
-        <header className="sticky top-0 z-20 bg-white/95 backdrop-blur border-b border-slate-200">
+        <header className="sticky top-0 z-20 bg-slate-950/90 backdrop-blur-xl border-b border-slate-800">
             <div className="max-w-5xl mx-auto flex items-center justify-between px-4 h-16">
                 <div className="flex items-center gap-2 shrink-0">
-                    <div className="w-8 h-8 rounded-lg bg-violet-600 flex items-center justify-center text-white font-bold text-sm">
+                    <div className="w-8 h-8 rounded-lg bg-gradient-to-r from-orange-500 to-amber-400 flex items-center justify-center text-slate-950 font-bold text-sm">
                         C
                     </div>
-                    <span className="font-semibold text-slate-900 text-lg tracking-tight hidden sm:block">
-                        Circle
+                    <span className="font-extrabold text-orange-400 text-lg tracking-tight hidden sm:block select-none">
+                        ClimaSphere
                     </span>
                 </div>
 
@@ -52,7 +65,7 @@ const Navbar = () => {
                         <input
                             type="text"
                             placeholder="Search people, posts..."
-                            className="w-full bg-slate-100 rounded-full pl-9 pr-4 py-2 text-sm text-slate-700 placeholder-slate-400 outline-none focus:ring-2 focus:ring-violet-300"
+                            className="w-full bg-slate-800 border border-slate-700 rounded-full pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 outline-none focus:border-slate-500 transition-colors"
                         />
                     </div>
                 </div>
@@ -64,9 +77,10 @@ const Navbar = () => {
                     {navItem("alerts", "Alerts", Bell)}
                 </nav>
 
-                <div className="w-9 h-9 rounded-full bg-slate-800 text-white flex items-center justify-center text-xs font-semibold ml-2 shrink-0">
-                    {CURRENT_USER.initials}
-                </div>
+                <img
+                    src={avatar}
+                    className="w-8 h-8 rounded-full"
+                />
             </div>
         </header>
     );

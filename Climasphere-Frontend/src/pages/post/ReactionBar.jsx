@@ -1,46 +1,59 @@
 import React, { useState } from "react";
 import {
-    Home,
-    Users,
-    PlusSquare,
-    Bell,
-    Search,
-    MessageCircle,
     ThumbsUp,
     ThumbsDown,
-    Share2,
-    MoreHorizontal,
-    Send,
 } from "lucide-react";
+import { FaThumbsUp, FaThumbsDown } from "react-icons/fa";
 import { postAPI } from "../../api/api";
 import Navbar from "./PostNavbar";
 import PostCard from "./postCard";
 
 const ReactionBar = ({ likes, dislikes, userVote, onVote }) => {
+
+    const [like, setLike] = useState(false);
+    const [disLike, setDislike] = useState(false);
+
+    const likeSystem = () => {
+        if (like) {
+            onVote("up", 0);
+            setLike(false);
+        } else {
+            onVote("up", 1);
+            setLike(true);
+            setDislike(false);
+        }
+    }
+
+    const disLikeSystem = () => {
+        if (disLike) {
+            onVote("down", 0);
+            setDislike(false);
+        } else {
+            onVote("down", 1);
+            setDislike(true);
+            setLike(false);
+        }
+    }
+
     return (
         <div className="inline-flex items-center rounded-full border border-slate-200 overflow-hidden text-sm">
             <button
-                onClick={() => onVote("up")}
-                className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${userVote === "up"
-                    ? "bg-emerald-50 text-emerald-700"
-                    : "text-slate-600 hover:bg-slate-50"
-                    }`}
+                onClick={likeSystem}
+                className={"flex items-center gap-1.5 px-3 py-1.5"}
             >
-                <ThumbsUp size={15} strokeWidth={userVote === "up" ? 2.4 : 2} />
-                <span className="font-medium">{likes}</span>
-            </button>
+                {like ? (<FaThumbsUp size={15} />) : (<ThumbsUp size={15} />)}
+            </button >
             <div className="w-px h-4 bg-slate-200" />
             <button
-                onClick={() => onVote("down")}
+                onClick={disLikeSystem}
                 className={`flex items-center gap-1.5 px-3 py-1.5 transition-colors ${userVote === "down"
                     ? "bg-rose-50 text-rose-700"
                     : "text-slate-600 hover:bg-slate-50"
                     }`}
             >
-                <ThumbsDown size={15} strokeWidth={userVote === "down" ? 2.4 : 2} />
-                <span className="font-medium">{dislikes}</span>
+                {disLike ? (<FaThumbsDown size={15} />) : (<ThumbsDown size={15} />)}
             </button>
-        </div>
+        </div >
     );
 }
 
