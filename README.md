@@ -306,7 +306,7 @@ npm run dev
 
 Aditya Shee  
 GitHub: https://github.com/AdityaShee12
-
+https://github.com/SandipGit04/Weather-Air-Quality-Project (Data Analyst Repository)
 ---
 
 ## License
