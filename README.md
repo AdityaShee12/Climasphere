@@ -160,10 +160,50 @@ EMAIL_PASS=your_email_app_password
 ClimaSphere/
 ├── ClimaSphere-Frontend/                  # React.js frontend
 │   ├── src/
-│   │   ├── components/
+|   |   ├── api/
+|   |   |    ├── api.js
+|   |   |    ├── Backend_API.js
+|   |   ├── app/
+|   |   |    ├── main.js
+|   |   |    ├── store.js
+|   |   ├── Background/
+|   |   |    ├── Background.jsx
+|   |   ├── components/
+|   |   |    ├── chat/
+|   |   |    |    ├─ ChatSidebar.jsx
+|   |   |    ├── AirQualityCard.jsx
+|   |   |    ├── ButtomNavbar.jsx
+|   |   |    ├── graph.jsx
+|   |   |    ├── Post.jsx
+|   |   |    ├── Videopage.jsx
+│   │   ├── dataAnalystPortal/
+|   |   |    ├── DataAnalystPortal.jsx
+│   │   ├── Download/
+|   |   |    ├── Download.jsx
+|   |   ├── features/
+|   |   |    ├── groupMessageSlice.jsx
+|   |   |    ├── layoutSlice.jsx
+|   |   |    ├── userSlice.jsc
+│   │   ├── Feed/
+│   │   │   ├── MainFeed.jsx
+│   │   │   └── UpperFeed.jsx
+│   │   ├── Layout/
+│   │   │   ├── ChatLayout.jsx
+│   │   │   ├── HomeLayout.jsx
+│   │   │   └── PostLayout.jsx
 │   │   ├── pages/
+│   │   │   ├── auth/
+│   │   │   ├── home/
+│   │   │   └── post/
 │   │   ├── context/
-│   │   ├── services/         # API call functions
+│   │   ├── routes/
+│   │   │   └── AppRoutes.jsx
+│   │   ├── services/                # API call functions
+│   │   ├── sockets/
+│   │   │   └── socket.js
+│   │   ├── VideoFeed/
+│   │   ├── Backend_API.js
+│   │   ├── index.css
 │   │   └── App.js
 │   └── tailwind.config.js
 │
